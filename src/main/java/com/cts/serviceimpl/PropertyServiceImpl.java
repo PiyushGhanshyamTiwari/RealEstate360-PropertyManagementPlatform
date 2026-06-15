@@ -4,12 +4,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.cts.dto.PropertyInputDTO;
 import com.cts.dto.PropertyOutputDTO;
 import com.cts.entity.Property;
 import com.cts.entity.User;
+import com.cts.exception.OwnerIdNotFoundException;
 import com.cts.mapper.PropertyMapper;
 import com.cts.repository.PropertyRepository;
 import com.cts.repository.UserRepository;
@@ -28,10 +31,10 @@ public class PropertyServiceImpl implements PropertyService {
 	@Override
 	public PropertyOutputDTO addProperty(PropertyInputDTO propertyInputDTO, int ownerId) {
 		User user = userRepository.findById(ownerId).orElse(null);
-		Property property = propertyMapper.convertToProperty(propertyInputDTO);
+		Property property = propertyMapper.convertToProperty(propertyInputDTO,user);
 		property.setCreatedAt(LocalDate.now());
 		property=propertyRepository.save(property);
-		return propertyMapper.convertToOutputDTO(property);
+		return propertyMapper.convertToPropertyOutputDTO(property);
 	}
 
 	@Override
@@ -39,7 +42,7 @@ public class PropertyServiceImpl implements PropertyService {
 		
 		return propertyRepository.findAll()
 				.stream()
-				.map(property->propertyMapper.convertToOutputDTO(property))
+				.map(property->propertyMapper.convertToPropertyOutputDTO(property))
 				.collect(Collectors.toList());
 	}
 
@@ -48,7 +51,7 @@ public class PropertyServiceImpl implements PropertyService {
 		
 		return propertyRepository.findByPropertyCity(propertyCity)
 				.stream()
-				.map(property->propertyMapper.convertToOutputDTO(property))
+				.map(property->propertyMapper.convertToPropertyOutputDTO(property))
 				.collect(Collectors.toList());
 	}
 
@@ -57,19 +60,20 @@ public class PropertyServiceImpl implements PropertyService {
 		
 		return propertyRepository.findByPropertyState(propertyState)
 				.stream()
-				.map(property->propertyMapper.convertToOutputDTO(property))
+				.map(property->propertyMapper.convertToPropertyOutputDTO(property))
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<PropertyOutputDTO> getPropertyByOwnerId(int ownerId) {
-		
-		return propertyRepository.findByOwnerId(ownerId)
+		List<Property> list= propertyRepository.findByOwnerId(ownerId);
+		if(list.isEmpty()) {
+			throw new OwnerIdNotFoundException("Owner Not found");
+		}
+		return list
 				.stream()
-				.map(property->propertyMapper.convertToOutputDTO(property))
+				.map(property->propertyMapper.convertToPropertyOutputDTO(property))
 				.collect(Collectors.toList());
-	}
-
 	
-	
+	}	
 }

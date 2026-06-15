@@ -1,28 +1,31 @@
 package com.cts.mapper;
 
+
 import org.springframework.stereotype.Component;
 
 import com.cts.dto.PropertyInputDTO;
 import com.cts.dto.PropertyOutputDTO;
 import com.cts.entity.Property;
+import com.cts.entity.User;
 
 @Component
 public class PropertyMapper {
 	
-	public Property convertToProperty(PropertyInputDTO propertyInputDTO) {
+	public Property convertToProperty(PropertyInputDTO propertyInputDTO,User user) {
 		Property property = new Property();
-		property.setPropertyId(propertyInputDTO.getPropertyId());
+		property.setUser(user);
 		property.setPropertyName(propertyInputDTO.getPropertyName());
 		property.setPropertyAddress(propertyInputDTO.getPropertyAddress());
 		property.setPropertyCity(propertyInputDTO.getPropertyCity());
 		property.setPropertyState(propertyInputDTO.getPropertyState());
 		property.setPropertyPostalCode(propertyInputDTO.getPropertyPostalCode());
 		property.setPropertyCountry(propertyInputDTO.getPropertyCountry());
+		property.setStatus(propertyInputDTO.getStatus());
 		return property;
 		
 	}
 	
-	public PropertyOutputDTO convertToOutputDTO(Property property) {
+	public PropertyOutputDTO convertToPropertyOutputDTO(Property property) {
 		PropertyOutputDTO response = new PropertyOutputDTO();
 		response.setPropertyId(property.getPropertyId());
 		response.setPropertyName(property.getPropertyName());
@@ -31,9 +34,10 @@ public class PropertyMapper {
 		response.setPropertyState(property.getPropertyState());
 		response.setPropertyPostalCode(property.getPropertyPostalCode());
 		response.setPropertyCountry(property.getPropertyCountry());
+		response.setStatus(property.getStatus());
 		response.setCreatedAt(property.getCreatedAt());
 		response.setUpdatedAt(property.getUpdatedAt());
-		
+		response.setOwnerId(property.getUser().getUserId());
 		return response;
 	}
 

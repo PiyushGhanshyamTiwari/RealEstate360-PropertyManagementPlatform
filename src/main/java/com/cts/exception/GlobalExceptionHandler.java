@@ -1,10 +1,10 @@
 package com.cts.exception;
-
+ 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
+ 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(PropertyIdNotFoundException.class)
@@ -27,4 +27,42 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleUnitIdNotFoundException(UnitIdNotFoundException ex){
 		return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
 	}
+	@ExceptionHandler(MaintenanceScheduleNotFoundException.class)
+    public ResponseEntity<?> handleScheduleNotFound(MaintenanceScheduleNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+ 
+    @ExceptionHandler(TechnicianNotFoundException.class)
+    public ResponseEntity<?> handleTechnicianNotFound(TechnicianNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+ 
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    public ResponseEntity<?> handleInvalidStatusTransition(InvalidStatusTransitionException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(MaintenanceLogNotFoundException.class)
+    public ResponseEntity<?> handleLogNotFound(MaintenanceLogNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+ 
+    @ExceptionHandler(TechnicianNotAvailableException.class)
+    public ResponseEntity<?> handleTechnicianNotAvailable(TechnicianNotAvailableException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+ 
+    @ExceptionHandler(TechnicianInactiveException.class)
+    public ResponseEntity<?> handleTechnicianInactive(TechnicianInactiveException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+ 
+    @ExceptionHandler(UnauthorizedTechnicianException.class)
+    public ResponseEntity<?> handleUnauthorizedTechnician(UnauthorizedTechnicianException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+ 
+    @ExceptionHandler(NoTechnicianAssignedException.class)
+    public ResponseEntity<?> handleNoTechnicianAssigned(NoTechnicianAssignedException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

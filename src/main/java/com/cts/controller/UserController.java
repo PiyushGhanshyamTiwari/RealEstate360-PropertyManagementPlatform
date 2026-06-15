@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cts.dto.LoginDTO;
 import com.cts.dto.LoginResponseDTO;
+import com.cts.dto.RegistrationInputDTO;
+import com.cts.dto.RegistrationOutputDTO;
 import com.cts.entity.User;
 import com.cts.repository.UserRepository;
 import com.cts.service.UserService;
@@ -31,9 +33,9 @@ public class UserController {
 	@PostMapping("/register")
 	@Operation(summary = "Add User using required information",
                description = "Returns added User info, if successfully added. ")
-	public ResponseEntity<?> addUser(@RequestBody User user){
-		user = userService.addUser(user);
-		return new ResponseEntity<>(user, HttpStatus.CREATED);
+	public ResponseEntity<?> registerUser(@RequestBody RegistrationInputDTO registerInputDTO){
+		RegistrationOutputDTO response = userService.registerUser(registerInputDTO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/all")

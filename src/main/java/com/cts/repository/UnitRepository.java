@@ -29,7 +29,7 @@ public interface UnitRepository extends JpaRepository<Unit, Integer> {
 	
 
     @Query("SELECT unit FROM Unit unit WHERE unit.property.propertyId = :propertyId")
-    public Page<Unit> findUnitByPropertyId(int propertyId, Pageable pageable);
+    public List<Unit> findUnitByPropertyId(int propertyId);
 
 	
 

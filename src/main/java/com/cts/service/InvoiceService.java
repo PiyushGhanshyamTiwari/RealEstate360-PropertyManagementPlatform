@@ -11,6 +11,6 @@ public interface InvoiceService {
 
 	public List<InvoiceOutputDTO> listInvoiceWithLeaseId(int leaseId);
 
-	public InvoiceOutputDTO updateStatus(int invoiceId, String status);
+	public InvoiceOutputDTO updateStatus(int invoiceId, String status,Integer officerId);
 
 }

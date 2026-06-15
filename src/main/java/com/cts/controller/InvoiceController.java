@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cts.dto.InvoiceInputDTO;
@@ -45,10 +46,10 @@ public class InvoiceController {
 	}
 	
 	@Operation(summary = "Updating the invoice status wrt InvoiceId")
-	@PutMapping("/{invoiceId}/{status}")
+	@PutMapping("/{invoiceId}/{status}/{officerId}")
 	@PreAuthorize("hasRole('ACCOUNT OFFICER')")
-	public ResponseEntity<?> updateStatus(@PathVariable int invoiceId,@PathVariable String status){
-		InvoiceOutputDTO response = invoiceService.updateStatus(invoiceId,status);
+	public ResponseEntity<?> updateStatus(@PathVariable int invoiceId,@PathVariable String status,@RequestParam Integer officerId){
+		InvoiceOutputDTO response = invoiceService.updateStatus(invoiceId,status,officerId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

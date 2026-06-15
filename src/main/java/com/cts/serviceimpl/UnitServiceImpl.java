@@ -101,52 +101,52 @@ public class UnitServiceImpl implements UnitService {
 //			list.add(output);
 //		}
 		
+//	@Override
+//	public List<UnitOutputDTO> findUnitByPropertyId(int propertyId, int pageNo, int pageSize) {
+//
+//         Pageable pageable = PageRequest.of(pageNo, pageSize);
+//
+//         Page<Unit> unitPage = unitRepository.findUnitByPropertyId(propertyId, pageable);
+//
+//         List<Unit> units = unitPage.getContent();
+//
+//         List<UnitOutputDTO> output = new ArrayList<>();
+//         
+//
+//        for (Unit unit : units) {
+//
+//        Property property = unit.getProperty();  // already mapped
+//
+//        UnitOutputDTO response = new UnitOutputDTO();
+//
+//        response.setUnitId(unit.getUnitId());
+//        response.setType(unit.getType());
+//        response.setAreaSqFt(unit.getAreaSqFt());
+//        response.setFloor(unit.getFloor());
+//        response.setRentAmount(unit.getRentAmount());
+//        response.setDepositAmount(unit.getDepositAmount());
+//        response.setAvailableFrom(unit.getAvailableFrom());
+//        response.setPropertyId(property.getPropertyId());
+//        output.add(response);
+//    }
+
 	@Override
-	public List<UnitOutputDTO> findUnitByPropertyId(int propertyId, int pageNo, int pageSize) {
-
-         Pageable pageable = PageRequest.of(pageNo, pageSize);
-
-         Page<Unit> unitPage = unitRepository.findUnitByPropertyId(propertyId, pageable);
-
-         List<Unit> units = unitPage.getContent();
-
-         List<UnitOutputDTO> output = new ArrayList<>();
-         
-
-        for (Unit unit : units) {
-
-        Property property = unit.getProperty();  // already mapped
-
-        UnitOutputDTO response = new UnitOutputDTO();
-
-        response.setUnitId(unit.getUnitId());
-        response.setType(unit.getType());
-        response.setAreaSqFt(unit.getAreaSqFt());
-        response.setFloor(unit.getFloor());
-        response.setRentAmount(unit.getRentAmount());
-        response.setDepositAmount(unit.getDepositAmount());
-        response.setAvailableFrom(unit.getAvailableFrom());
-        response.setPropertyId(property.getPropertyId());
-        output.add(response);
-    }
-
-
-       if (output.isEmpty()) {
-             throw new RuntimeException("No units found for given propertyId");
-    }
-
-      return output;
+    public List<UnitOutputDTO> findUnitByPropertyId(int propertyId) {
+        return unitRepository.findUnitByPropertyId(propertyId)
+                .stream()
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+                .collect(Collectors.toList());
 	}
 
-	
+//       if (output.isEmpty()) {
+//             throw new RuntimeException("No units found for given propertyId");
+//    }
+//
+//      return output;
+//	}
 
 
-	    
-			
-		
-		
-	}
-
+}
 	
 	
 

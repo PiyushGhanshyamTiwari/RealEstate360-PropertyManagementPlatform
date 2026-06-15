@@ -17,8 +17,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PropertyInputDTO {
 
-	@NotBlank(message="Property Id can not be null.")
-	private int propertyId;
 	@NotBlank(message="Property name can not be null")
 	private String propertyName;
 	@NotBlank(message = "Property Address can not be null")
@@ -32,5 +30,7 @@ public class PropertyInputDTO {
 	private String propertyPostalCode;
 	@NotBlank(message = "Property Country should not be null")
 	private String propertyCountry;
+	@NotBlank(message = "Status cannot be blank")
+    private String status;
 	
 }

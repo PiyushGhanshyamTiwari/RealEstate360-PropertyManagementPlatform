@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.cts.dto.LoginDTO;
 import com.cts.dto.LoginResponseDTO;
+import com.cts.dto.RegistrationInputDTO;
+import com.cts.dto.RegistrationOutputDTO;
 import com.cts.entity.User;
+import com.cts.mapper.UserRegistrationMapper;
 import com.cts.repository.UserRepository;
 import com.cts.service.UserService;
 import com.cts.util.JWTUtil;
@@ -21,14 +24,20 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JWTUtil jwtUtil;
+	private final UserRegistrationMapper mapper;
 
 	@Override
-	public User addUser(User user) {
-		user.setRegisteredOn(LocalDate.now());
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		return userRepository.save(user);
-	}
+    public RegistrationOutputDTO registerUser(RegistrationInputDTO dto) {
 
+        if (userRepository.existsByEmailId(dto.getEmailId())) {
+            throw new RuntimeException("Email already exists");
+        }
+        User user = mapper.convertToUser(dto);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
+        return mapper.convertToUserResponseDTO(savedUser);
+    }
+	
 	@Override
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
@@ -36,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public LoginResponseDTO userLogin(LoginDTO loginDTO) {
-		User user = userRepository.getUserByEmail(loginDTO.getEmailId());
+		User user = userRepository.findUserByEmail(loginDTO.getEmailId());
 		if(user==null)
 			return null;
 		String existingPwd = user.getPassword();
@@ -48,7 +57,10 @@ public class UserServiceImpl implements UserService {
 		else {
 			return null;
 		}
-	} 
+	}
+
+	
+	
 	
 
 }

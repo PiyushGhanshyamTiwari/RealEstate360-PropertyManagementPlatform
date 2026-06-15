@@ -98,12 +98,10 @@ public class UnitController {
      @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
      @Operation(summary = "Provide unit list based on pagination",
                 description = "This will display list of unit on specified page")
-     public ResponseEntity<?> findUnitByPropertyId(@PathVariable int propertyId,
-                                                     @RequestParam int page,
-                                                     @RequestParam int size) {
+     public ResponseEntity<?> findUnitByPropertyId(@PathVariable int propertyId) {
 
     List<UnitOutputDTO> response =
-            unitService.findUnitByPropertyId(propertyId, page, size);
+            unitService.findUnitByPropertyId(propertyId);
 
     return new ResponseEntity<>(response, HttpStatus.OK);
 }

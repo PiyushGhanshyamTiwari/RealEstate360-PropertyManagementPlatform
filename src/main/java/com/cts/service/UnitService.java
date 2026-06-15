@@ -26,5 +26,5 @@ public interface UnitService {
 
 	//List<UnitOutputDTO> findUnitByPropertyId(int propertyId);
 	
-	List<UnitOutputDTO> findUnitByPropertyId(int propertyId, int pageNo, int pageSize);
+	List<UnitOutputDTO> findUnitByPropertyId(int propertyId);
 }

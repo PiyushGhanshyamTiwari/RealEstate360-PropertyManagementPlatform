@@ -41,36 +41,36 @@ public class PropertyController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 	@GetMapping("/all")
-	@PreAuthorize("hasAnyRole('OWNER','TENANT)")
 	@Operation(summary = "Provide property list which have been added",
                description = "This will display a list of all the registered properties.")
+	@PreAuthorize("hasAnyRole('TENANT','OWNER')")
 	public ResponseEntity<?> getAllProperties(){
 		List<PropertyOutputDTO> property = propertyService.getAllProperties();
 		return new ResponseEntity<>(property, HttpStatus.OK);
 	}
 
 	@GetMapping("/city/{city}")
-	@PreAuthorize("hasAnyRole('OWNER','TENANT)")
 	@Operation(summary = "Provide property list for the particular searched type",
                description = "This will display list of property by applying search by city filter")
+	@PreAuthorize("hasAnyRole('TENANT','OWNER')")
 	public ResponseEntity<?> getPropertyByCity(@PathVariable("city") String propertyCity){
 		List<PropertyOutputDTO> property = propertyService.getPropertyByCity(propertyCity);
 		return new ResponseEntity<>(property, HttpStatus.OK);
 	}
 	
 	@GetMapping("/state/{state}")
-	@PreAuthorize("hasRole('OWNER','TENANT)")
 	@Operation(summary = "Provide property list for the particular searched type",
                description = "This will display list of property by applying search by state filter")
+	@PreAuthorize("hasAnyRole('TENANT','OWNER')")
 	public ResponseEntity<?> getPropertyByState(@PathVariable("state") String propertyState){
 		List<PropertyOutputDTO> property = propertyService.getPropertyByState(propertyState);
 		return new ResponseEntity<>(property, HttpStatus.OK);
 	}
 	
 	@GetMapping("/ownerid/{ownerid}") 
-	@PreAuthorize("hasRole('OWNER','TENANT)")
 	@Operation(summary = "Provide property list for the particular searched type",
                description = "This will display list of property by applying search by ownerID filter")  
+	@PreAuthorize("hasAnyRole('TENANT','OWNER')")
 	public ResponseEntity<?> getPropertyByOwnerId(@PathVariable("ownerid") int ownerId){
 		List<PropertyOutputDTO> property = propertyService.getPropertyByOwnerId(ownerId);
 		return new ResponseEntity<>(property, HttpStatus.OK);
