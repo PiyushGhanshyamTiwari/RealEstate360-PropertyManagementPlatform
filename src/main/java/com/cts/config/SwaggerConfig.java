@@ -19,7 +19,7 @@ public class SwaggerConfig {
 	            .title("Property Management and operation System")
 	            .version("1.0")
 	            .description("It allows to manage property and help tenant to rent a property.")
-	            .contact(new Contact().name("Sneha").email("sneha@cognizant.com")))
+	            .contact(new Contact().name("Pod4").email("pod4@cognizant.com")))
 	            .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
 	            .components(new Components()
 	                .addSecuritySchemes("bearerAuth",
