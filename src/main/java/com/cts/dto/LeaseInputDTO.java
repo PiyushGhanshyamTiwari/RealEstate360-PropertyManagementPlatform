@@ -17,8 +17,5 @@ public class LeaseInputDTO {
 	private Integer unitId;
 	@NotNull(message = "Tenant Id should not be empty")
 	private Integer tenantId;
-	@NotNull(message = "Start date should not be empty")
-	private LocalDate startDate;
-	@NotNull(message = "End date should not be empty")
-	private LocalDate endDate;
+	
 }

@@ -1,5 +1,7 @@
 package com.cts.dto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,5 +17,9 @@ public class ApplicationInputDTO {
 	private Integer unitId;
 	@NotNull(message = "User Id is required")
     private Integer userId;
+	@NotNull(message = "Start date should not be empty")
+    private LocalDate startDate;
+    @NotNull(message = "End date should not be empty")
+    private LocalDate endDate;
     
 }

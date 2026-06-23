@@ -22,5 +22,6 @@ public class PropertyOutputDTO {
 	private String propertyCountry;
 	private LocalDate createdAt;
 	private LocalDate updatedAt;
+	private int ownerId;  
 
 }

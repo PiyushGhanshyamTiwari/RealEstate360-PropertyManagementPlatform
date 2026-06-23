@@ -1,24 +1,30 @@
 package com.cts.serviceimpl;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.cts.annotation.Audit;
+import com.cts.constants.AuditActions;
 import com.cts.dto.UnitInputDTO;
 import com.cts.dto.UnitOutputDTO;
-
 import com.cts.entity.Property;
 import com.cts.entity.Unit;
+import com.cts.enums.UnitStatus;
+import com.cts.exception.PropertyIdNotFoundException;
 import com.cts.mapper.UnitMapper;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.cts.repository.PropertyRepository;
 import com.cts.repository.UnitRepository;
 import com.cts.service.UnitService;
+
+import com.cts.entity.User;
+import com.cts.exception.UserIdNotFoundException;
+import com.cts.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -26,128 +32,124 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UnitServiceImpl implements UnitService {
 
-	private final UnitRepository unitRepository;
-	private final PropertyRepository propertyRepository;
-	private final UnitMapper unitMapper;
-	
-	@Override
-	public UnitOutputDTO addUnit(UnitInputDTO unitInputDTO) {
-		
-		
-		Property property = propertyRepository.findById(unitInputDTO.getPropertyId()).orElse(null);
-		
-		Unit unit = unitMapper.convertToUnit(unitInputDTO, property);
-		unit = unitRepository.save(unit);
-		return unitMapper.convertToUnitOutputDTO(unit);
+    private final UnitRepository unitRepository;
+    private final PropertyRepository propertyRepository;
+    private final UnitMapper unitMapper;
+    private final UserRepository userRepository;
 
-	}
+    @Override
+    @Audit(action = AuditActions.CREATE_UNIT, resourceType = "Unit")
+    public UnitOutputDTO addUnit(UnitInputDTO unitInputDTO) {
 
-	@Override
-	public List<UnitOutputDTO> getAllUnit() {
-		return unitRepository.findAll()
-				.stream()
-				.map(unit->unitMapper.convertToUnitOutputDTO(unit))
-				.collect(Collectors.toList());
-	}
+        Property property = propertyRepository.findById(unitInputDTO.getPropertyId())
+                .orElseThrow(() ->
+                        new PropertyIdNotFoundException("Property Id not found"));
 
-	@Override
-	public List<UnitOutputDTO> getUnitByType(String type) {
-		return unitRepository.findUnitByType(type)
-				.stream()
-				.map(unit->unitMapper.convertToUnitOutputDTO(unit))
-				.collect(Collectors.toList());
-	}
+        // Logged-in user
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-	@Override
-	public List<UnitOutputDTO> getUnitByAreaSqFt(double areaSqFt) {
-		return unitRepository.findUnitByAreaSqFt(areaSqFt)
-				.stream()
-				.map(unit->unitMapper.convertToUnitOutputDTO(unit))
-				.collect(Collectors.toList());
-	}
+        User loggedInUser = userRepository.findUserByEmail(email);
 
-	@Override
-	public List<UnitOutputDTO> getUnitByFloor(int floor) {
-		return unitRepository.findUnitByFloor(floor)
-				.stream()
-				.map(unit->unitMapper.convertToUnitOutputDTO(unit))
-				.collect(Collectors.toList());
-	}
+        if (loggedInUser == null) {
+            throw new UserIdNotFoundException("User not found");
+        }
 
-	@Override
-	public List<UnitOutputDTO> findUnitByRentAmountBetween(double min, double max) {
-		return unitRepository.findUnitByRentAmountBetween(min, max)
-				.stream()
-				.map(unit->unitMapper.convertToUnitOutputDTO(unit))
-				.collect(Collectors.toList());
-	}
+        // Verify property ownership
+        if (!property.getUser().getUserId().equals(loggedInUser.getUserId())) {
+            throw new AccessDeniedException(
+                    "Only the owner of this property can add units");
+        }
 
-	//@Override
-	//public List<UnitOutputDTO> findUnitByPropertyId(int propertyId) {
-		
-//		List<Unit> units = unitRepository.findUnitByPropertyPropertyId(propertyId);
-//		List<UnitOutputDTO> list = new ArrayList<>();
-//		for(Unit savedUnit:units) {
-//			UnitOutputDTO output = UnitOutputDTO.builder()
-//		            .unitId(savedUnit.getUnitId())
-//		            .type(savedUnit.getType())
-//		            .areaSqFt(savedUnit.getAreaSqFt())
-//		            .floor(savedUnit.getFloor())
-//		            .rentAmount(savedUnit.getRentAmount())
-//		            .depositAmount(savedUnit.getDepositAmount())
-//		            .availableFrom(savedUnit.getAvailableFrom())
-//		            .propertyId(savedUnit.getProperty().getPropertyId())
-//		            .build();
-//			list.add(output);
-//		}
-		
-	@Override
-	public List<UnitOutputDTO> findUnitByPropertyId(int propertyId, int pageNo, int pageSize) {
+        Unit unit = unitMapper.convertToUnit(unitInputDTO, property);
 
-         Pageable pageable = PageRequest.of(pageNo, pageSize);
+        unit = unitRepository.save(unit);
 
-         Page<Unit> unitPage = unitRepository.findUnitByPropertyId(propertyId, pageable);
+        return unitMapper.convertToUnitOutputDTO(unit);
+    }
+    
+    @Override
+    public List<UnitOutputDTO> findAllUnit() {
 
-         List<Unit> units = unitPage.getContent();
+        return unitRepository.findAll()
 
-         List<UnitOutputDTO> output = new ArrayList<>();
-         
+                .stream()
 
-        for (Unit unit : units) {
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
 
-        Property property = unit.getProperty();  // already mapped
+                .collect(Collectors.toList());
 
-        UnitOutputDTO response = new UnitOutputDTO();
-
-        response.setUnitId(unit.getUnitId());
-        response.setType(unit.getType());
-        response.setAreaSqFt(unit.getAreaSqFt());
-        response.setFloor(unit.getFloor());
-        response.setRentAmount(unit.getRentAmount());
-        response.setDepositAmount(unit.getDepositAmount());
-        response.setAvailableFrom(unit.getAvailableFrom());
-        response.setPropertyId(property.getPropertyId());
-        output.add(response);
     }
 
+    @Override
+    public List<UnitOutputDTO> findUnitByType(String type) {
 
-       if (output.isEmpty()) {
-             throw new RuntimeException("No units found for given propertyId");
+        return unitRepository.findUnitByType(type)
+
+                .stream()
+
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+
+                .collect(Collectors.toList());
+
     }
 
-      return output;
-	}
+    @Override
+    public List<UnitOutputDTO> findUnitByAreaSqFt(double areaSqFt) {
 
-	
+        return unitRepository.findUnitByAreaSqFt(areaSqFt)
 
+                .stream()
 
-	    
-			
-		
-		
-	}
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
 
-	
-	
+                .collect(Collectors.toList());
 
+    }
+    
+    @Override
+    public List<UnitOutputDTO> findUnitByFloor(int floor) {
 
+        return unitRepository.findUnitByFloor(floor)
+
+                .stream()
+
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<UnitOutputDTO> findUnitByPriceRange(double min, double max) {
+
+        return unitRepository.findUnitByPriceRange(min, max)
+
+                .stream()
+
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<UnitOutputDTO> findUnitByPropertyId(int propertyId) {
+        return unitRepository.findUnitByPropertyId(propertyId)
+                .stream()
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+                .collect(Collectors.toList());
+    }
+    
+    public List<UnitOutputDTO> findUnitByStatus(String status) {
+
+        UnitStatus unitStatus = UnitStatus.valueOf(status.toUpperCase());
+
+        return unitRepository.findByStatus(unitStatus)
+                .stream()
+                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+                .collect(Collectors.toList());
+    }
+
+}

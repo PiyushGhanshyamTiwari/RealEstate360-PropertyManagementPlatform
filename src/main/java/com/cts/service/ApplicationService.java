@@ -13,4 +13,7 @@ public interface ApplicationService {
 
 	public ApplicationOutputDTO updateStatusOfApplication(int applicationId, String status);
 
+    public List<ApplicationOutputDTO> getApplicationByTenantId(int userId);
+
+    public ApplicationOutputDTO getApplicationByApplicationId(int applicationId);
 }

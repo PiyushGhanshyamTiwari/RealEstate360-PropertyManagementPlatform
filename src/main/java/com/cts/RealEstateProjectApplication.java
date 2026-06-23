@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy
-
 public class RealEstateProjectApplication {
 
 	public static void main(String[] args) {

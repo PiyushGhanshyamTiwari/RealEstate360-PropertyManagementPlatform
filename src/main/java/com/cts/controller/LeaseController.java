@@ -24,14 +24,7 @@ import lombok.AllArgsConstructor;
 @Tag(description = "All operations related to lease", name = "Lease Controller")
 public class LeaseController {
 	private LeaseService leaseService;
-	@Operation(summary = "Generating the lease aggrement")
-	@PostMapping("/generate")
-	@PreAuthorize("hasAnyRole('TENANT','OWNER')")
-	public ResponseEntity<?> leaseGeneration(@RequestBody LeaseInputDTO input){
-		LeaseOutputDTO response = leaseService.leaseGeneration(input);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-		
-	}
+	
 	@Operation(summary = "Generating the lease aggrement")
 	@PutMapping("/{leaseId}/{status}")
 	@PreAuthorize("hasRole('OWNER')")

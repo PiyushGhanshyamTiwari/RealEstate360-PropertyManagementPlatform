@@ -70,7 +70,7 @@ public class PropertyPhotoServiceImpl implements PropertyPhotoService {
 
 	@Override
 	public List<PropertyPhoto> photosByUnit(int unitID) {
-		// TODO Auto-generated method stub
+		
 		Unit unit = unitRepository.findById(unitID).orElse(null);
 		List<PropertyPhoto> list = photoRepo.photosByUnit(unitID);
 		return list;

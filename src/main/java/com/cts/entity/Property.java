@@ -33,7 +33,7 @@ public class Property {
 	private String propertyState;
 	private String propertyPostalCode;
 	private String propertyCountry;
-	private String status;
+	
 	private LocalDate createdAt;
 	private LocalDate updatedAt;
 	
@@ -41,6 +41,11 @@ public class Property {
 	@ManyToOne
 	@JoinColumn(name = "owner_id")
 	private User user;
+
+
+	 
+
+	
 	
 
 }

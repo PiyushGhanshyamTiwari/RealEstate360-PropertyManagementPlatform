@@ -1,5 +1,6 @@
 package com.cts.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -28,22 +29,30 @@ import lombok.NoArgsConstructor;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Application {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int applicationId;
-	@ManyToOne
-	@JoinColumn(name = "unitId")
-	private Unit unit;
-	@ManyToOne
-	@JoinColumn(name = "userId")
-	private User user;
-	@CreatedDate
-	private LocalDateTime submittedAt;
-	@Enumerated(EnumType.STRING)
-	private Status status;
-	public enum Status{
-		Pending,
-		Approved,
-		Rejected
-	}
+	    @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    private int applicationId;
+
+	    @ManyToOne
+	    @JoinColumn(name = "unitId")
+	    private Unit unit;
+
+	    @ManyToOne
+	    @JoinColumn(name = "userId")
+	    private User user;
+
+	    private LocalDate startDate;
+	    private LocalDate endDate;
+
+	    @CreatedDate
+	    private LocalDateTime submittedAt;
+
+	    @Enumerated(EnumType.STRING)
+	    private Status status;
+
+	    public enum Status {
+	        Pending,
+	        Approved,
+	        Rejected
+	    }
 }

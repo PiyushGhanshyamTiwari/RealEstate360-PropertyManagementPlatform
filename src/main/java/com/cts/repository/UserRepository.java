@@ -10,5 +10,8 @@ import com.cts.entity.User;
 public interface UserRepository extends JpaRepository<User, Integer> {
 
 	@Query("select user from User user where user.emailId=?1")
-	public User getUserByEmail(String emailId);
+	public User findUserByEmail(String emailId);
+
+	boolean existsByEmailId(String emailId);
+	
 }

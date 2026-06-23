@@ -12,19 +12,12 @@ import com.cts.repository.UnitRepository;
 public interface UnitService {
 
 
-	UnitOutputDTO addUnit(UnitInputDTO unitDTO);
-
-	List<UnitOutputDTO> getAllUnit();
-
-	List<UnitOutputDTO> getUnitByType(String type);
-
-	List<UnitOutputDTO> getUnitByAreaSqFt(double areaSqFt);
-
-	List<UnitOutputDTO> getUnitByFloor(int floor);
-
-	List<UnitOutputDTO> findUnitByRentAmountBetween(double min, double max);
-
-	//List<UnitOutputDTO> findUnitByPropertyId(int propertyId);
-	
-	List<UnitOutputDTO> findUnitByPropertyId(int propertyId, int pageNo, int pageSize);
+	public UnitOutputDTO addUnit(UnitInputDTO unit);
+    public List<UnitOutputDTO> findUnitByType(String type);
+    public List<UnitOutputDTO> findUnitByPriceRange(double minPrice, double maxPrice);
+    public List<UnitOutputDTO> findUnitByPropertyId(int propertyId);
+    public List<UnitOutputDTO> findAllUnit();
+    public List<UnitOutputDTO> findUnitByFloor(int floor);
+    public List<UnitOutputDTO> findUnitByAreaSqFt(double areaSqFt);
+    public List<UnitOutputDTO> findUnitByStatus(String status);
 }

@@ -1,5 +1,6 @@
 package com.cts.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -20,6 +21,8 @@ public class ApplicationOutputDTO {
 	private int applicationId;
 	private int unitId;
 	private int userId;
+	private LocalDate startDate;
+    private LocalDate endDate;
 	@CreatedDate
 	private LocalDateTime submittedAt;
 	private String status;

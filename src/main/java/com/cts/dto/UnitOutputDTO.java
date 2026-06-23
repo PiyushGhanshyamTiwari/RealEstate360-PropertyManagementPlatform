@@ -3,6 +3,7 @@ package com.cts.dto;
 import java.time.LocalDate;
 
 import com.cts.entity.Property;
+import com.cts.enums.UnitStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class UnitOutputDTO {
     private int floor;
     private double rentAmount;
     private double depositAmount;
+    private UnitStatus status;
     private LocalDate availableFrom;
     private LocalDate createdAt;
     private LocalDate updatedAt;

@@ -1,5 +1,6 @@
 package com.cts.mapper;
 
+import com.cts.dto.InvoiceDefaultersOutputDto;
 import com.cts.dto.InvoiceInputDTO;
 import com.cts.dto.InvoiceOutputDTO;
 import com.cts.entity.Invoice;
@@ -27,4 +28,19 @@ public class InvoiceMapper {
 				.generatedAt(invoice.getGeneratedAt())
 				.build();
 	}
+	
+	public static InvoiceDefaultersOutputDto convertToInvoiceDefaultersOutputDto(Invoice invoice) {
+        return InvoiceDefaultersOutputDto.builder()
+                .invoiceId(invoice.getInvoiceId())
+                .tenantId(invoice.getTenantProfile().getTenantId())
+                .tenantName(invoice.getTenantProfile().getUser().getUserName())
+                .leaseId(invoice.getLease().getLeaseId())
+                .emailId(invoice.getTenantProfile().getUser().getEmailId())
+                .phoneNo(invoice.getTenantProfile().getUser().getPhone())
+                .amountDue(invoice.getLease().getUnit().getRentAmount())
+                .dueDate(invoice.getDueDate())
+                .build();
+
+
+    }
 }

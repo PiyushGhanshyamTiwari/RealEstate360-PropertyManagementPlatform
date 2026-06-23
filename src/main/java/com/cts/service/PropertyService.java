@@ -3,21 +3,17 @@ package com.cts.service;
 import java.util.List;
 
 import com.cts.dto.PropertyInputDTO;
+
 import com.cts.dto.PropertyOutputDTO;
-import com.cts.entity.Property;
 
 public interface PropertyService {
 
-	PropertyOutputDTO addProperty(PropertyInputDTO propertyInputDTO, int ownerId);
+    public PropertyOutputDTO addProperty(PropertyInputDTO property, int ownerId);
 
-	List<PropertyOutputDTO> getAllProperties();
+    public List<PropertyOutputDTO> findPropertyByCity(String city);
 
-	List<PropertyOutputDTO> getPropertyByState(String state);
+    public List<PropertyOutputDTO> findPropertyByState(String state);
 
-	List<PropertyOutputDTO> getPropertyByOwnerId(int ownerId);
-
-	List<PropertyOutputDTO> getPropertyByCity(String city);
-
-	
-
+    public List<PropertyOutputDTO> findPropertyByOwnerId(int ownerId);
 }
+

@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cts.dto.InvoiceDefaultersOutputDto;
 import com.cts.dto.InvoiceInputDTO;
 import com.cts.dto.InvoiceOutputDTO;
 import com.cts.service.InvoiceService;
@@ -28,17 +30,17 @@ import lombok.AllArgsConstructor;
 @Tag(description = "All operations related to invoice", name = "Invoice Controller")
 public class InvoiceController {
 	private InvoiceService invoiceService;
-	@Operation(summary = "Generating the invoice")
-	@PostMapping("/generate")
-	@PreAuthorize("hasRole('ACCOUNT OFFICER')")
-	public ResponseEntity<?> generateInvoice(@RequestBody InvoiceInputDTO input){
-		List<InvoiceOutputDTO> response = invoiceService.generateInvoice(input);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
+//	@Operation(summary = "Generating the invoice")
+//	@PostMapping("/generate")
+//	@PreAuthorize("hasRole('ACCOUNT OFFICER')")
+//	public ResponseEntity<?> generateInvoice(@RequestBody InvoiceInputDTO input){
+//		List<InvoiceOutputDTO> response = invoiceService.generateInvoice(input);
+//		return new ResponseEntity<>(response, HttpStatus.CREATED);
+//	}
 	
 	@Operation(summary = "Listing the invoice details wrt leaseId")
 	@GetMapping("/leaseId/{leaseId}")
-	@PreAuthorize("hasRole('ACCOUNT OFFICER')")
+	@PreAuthorize("hasAnyRole('ACCOUNT OFFICER','TENANT','OWNER')")
 	public ResponseEntity<?> listInvoiceWithLeaseId(@PathVariable int leaseId){
 		List<InvoiceOutputDTO> response = invoiceService.listInvoiceWithLeaseId(leaseId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -47,8 +49,15 @@ public class InvoiceController {
 	@Operation(summary = "Updating the invoice status wrt InvoiceId")
 	@PutMapping("/{invoiceId}/{status}")
 	@PreAuthorize("hasRole('ACCOUNT OFFICER')")
-	public ResponseEntity<?> updateStatus(@PathVariable int invoiceId,@PathVariable String status){
-		InvoiceOutputDTO response = invoiceService.updateStatus(invoiceId,status);
+	public ResponseEntity<?> updateStatus(@PathVariable int invoiceId,@PathVariable String status, @RequestParam Integer officerId){
+		InvoiceOutputDTO response = invoiceService.updateStatus(invoiceId,status,officerId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	@Operation(summary = "Listing defaulter invoices (pending or overdue, due on or before today)")
+    @GetMapping("/defaulters")
+    @PreAuthorize("hasAnyRole('ACCOUNT OFFICER','ADMIN')")
+    public ResponseEntity<?> getDefaulters() {
+        List<InvoiceDefaultersOutputDto> response = invoiceService.getDefaulters();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

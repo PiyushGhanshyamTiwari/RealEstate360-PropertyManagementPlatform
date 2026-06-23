@@ -19,9 +19,9 @@ public class UserInfoConfigurationManager implements UserDetailsService {
 
 	@Override
     public UserDetails loadUserByUsername(String emailId) throws UsernameNotFoundException {
-        User user=userRepository.getUserByEmail(emailId);
+        User user=userRepository.findUserByEmail(emailId);
         if (user != null) {
-        	String [] roles = {user.getRole()};
+        	String [] roles = {user.getRole().toUpperCase()};
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getEmailId())
                     .password(user.getPassword())
