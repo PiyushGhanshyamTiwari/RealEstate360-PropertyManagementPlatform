@@ -12,7 +12,7 @@ import com.cts.entity.PropertyPhoto;
 @Repository
 public interface PropertyPhotoRepository extends JpaRepository<PropertyPhoto, Integer>{
 	@Query("SELECT p FROM PropertyPhoto p WHERE p.unit.unitId = :unitId")
-	public List<PropertyPhoto> photosByUnit(int unitID);
+	public List<PropertyPhoto> photosByUnit(int unitId);
 
 
 }

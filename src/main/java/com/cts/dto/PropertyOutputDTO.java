@@ -20,6 +20,7 @@ public class PropertyOutputDTO {
 	private String propertyState;
 	private String propertyPostalCode;
 	private String propertyCountry;
+	private String status;
 	private LocalDate createdAt;
 	private LocalDate updatedAt;
 	private int ownerId;  

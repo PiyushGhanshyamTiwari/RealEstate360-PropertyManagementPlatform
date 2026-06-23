@@ -1,6 +1,6 @@
 package com.cts.entity;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
