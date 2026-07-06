@@ -31,11 +31,25 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
-    public List<AuditLogResponseDTO> getAllLogs() {
-        return auditLogRepository.findAll()
-                .stream()
-                .map(log -> auditLogMapper.convertToAuditLogResponseDTO(log))
-                .collect(Collectors.toList());
+    public List<AuditLogResponseDTO> getAllLogs(String logType,String logValue) {
+        if (logType == null) {
+            return auditLogRepository.findAll()
+                    .stream()
+                    .map(auditLogMapper::convertToAuditLogResponseDTO)
+                    .collect(Collectors.toList());
+        } else {
+            switch (logType) {
+                case "USER":
+                    return getLogsByUserId(Integer.parseInt(logValue));
+                case "ACTION":
+                    return getLogsByAction(logValue);
+                case "RESOURCE":
+                    return getLogsByResourceType(logValue);
+
+            }
+
+        }
+        return null;
     }
 
     @Override

@@ -20,6 +20,12 @@ public class UserRegistrationMapper {
         user.setRole(dto.getRole());
         user.setPassword(dto.getPassword());
         user.setRegisteredOn(LocalDate.now());
+        if (dto.getStatus() != null) {
+            user.setStatus(User.Status.valueOf(dto.getStatus().toUpperCase()));
+        }
+        else {
+            user.setStatus(User.Status.ACTIVE);
+        }
         return user;
     }
 
@@ -32,6 +38,7 @@ public class UserRegistrationMapper {
         response.setPhone(user.getPhone());
         response.setRole(user.getRole());
         response.setRegisteredOn(user.getRegisteredOn());
+        response.setStatus(user.getStatus().name());
         return response;
     }
 }

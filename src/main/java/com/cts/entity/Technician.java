@@ -38,13 +38,6 @@ public class Technician {
     @Column(nullable = false)
     private TechnicianSpecialization specialization;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TechnicianStatus status;
-    
-    @Column(nullable = false)
-    private Boolean available;
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime hireDate;

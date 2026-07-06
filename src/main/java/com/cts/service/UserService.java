@@ -12,4 +12,5 @@ public interface UserService {
 	public RegistrationOutputDTO registerUser(RegistrationInputDTO dto);
 	public List<User> getAllUsers();
 	public LoginResponseDTO userLogin(LoginDTO loginDTO);
+    public RegistrationOutputDTO updateUser(Integer userId,RegistrationInputDTO registerInputDTO);
 }

@@ -8,6 +8,8 @@ import com.cts.dto.PropertyOutputDTO;
 import com.cts.entity.Property;
 import com.cts.entity.User;
 
+import java.time.LocalDate;
+
 @Component
 public class PropertyMapper {
 
@@ -20,6 +22,8 @@ public class PropertyMapper {
         property.setPropertyState(propertyInputDTO.getPropertyState());
         property.setPropertyPostalCode(propertyInputDTO.getPropertyPostalCode());
         property.setPropertyCountry(propertyInputDTO.getPropertyCountry());
+        property.setCreatedAt(LocalDate.now());
+        property.setUpdatedAt(LocalDate.now());
         return property;
 
     }

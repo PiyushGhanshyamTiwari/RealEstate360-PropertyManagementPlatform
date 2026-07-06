@@ -2,6 +2,7 @@ package com.cts.serviceimpl;
 
 import java.util.List;
 
+import com.cts.exception.UserIdNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -96,5 +97,27 @@ public class UserServiceImpl implements UserService {
 
         return new LoginResponseDTO(user.getUserId(), user.getUserName(),
                 user.getEmailId(), user.getPhone(), user.getRole(), token);
+    }
+
+    @Override
+    public RegistrationOutputDTO updateUser(Integer userId,
+                                            RegistrationInputDTO dto) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserIdNotFoundException("User not found with id " + userId));
+
+        user.setUserName(dto.getUserName());
+        user.setEmailId(dto.getEmailId());
+        user.setPhone(Long.parseLong(dto.getPhone()));
+        user.setRole(dto.getRole());
+        user.setPassword(dto.getPassword());
+        if (dto.getStatus() != null) {
+            user.setStatus(User.Status.valueOf(dto.getStatus().toUpperCase()));
+        }
+
+        User updatedUser = userRepository.save(user);
+
+        return mapper
+                .convertToUserResponseDTO(updatedUser);
     }
 }

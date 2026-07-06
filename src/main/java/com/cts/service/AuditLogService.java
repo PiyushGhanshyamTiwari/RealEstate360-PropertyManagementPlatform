@@ -9,7 +9,7 @@ public interface AuditLogService {
 
     AuditLogResponseDTO logAction(AuditLogRequestDTO requestDTO);
 
-    List<AuditLogResponseDTO> getAllLogs();
+    List<AuditLogResponseDTO> getAllLogs(String logType, String logValue);
 
     AuditLogResponseDTO getLogById(Long auditId);
 

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -68,14 +69,26 @@ public class PropertyPhotoServiceImpl implements PropertyPhotoService {
     }
 
 
-	@Override
-	public List<PropertyPhoto> photosByUnit(int unitID) {
-		
-		Unit unit = unitRepository.findById(unitID).orElse(null);
-		List<PropertyPhoto> list = photoRepo.photosByUnit(unitID);
-		return list;
-	}
 
+    @Override
+    public HashMap<Integer, String> photosByUnit(int unitID) {
+
+        Unit unit = unitRepository.findById(unitID).orElse(null);
+
+        if (unit == null) {
+            return new HashMap<>();
+        }
+
+        List<PropertyPhoto> list = photoRepo.photosByUnit(unitID);
+
+        HashMap<Integer, String> photoMap = new HashMap<>();
+
+        for (PropertyPhoto photo : list) {
+            photoMap.put(photo.getPhotoId(), photo.getCaption());
+        }
+
+        return photoMap;
+    }
     
 
 }

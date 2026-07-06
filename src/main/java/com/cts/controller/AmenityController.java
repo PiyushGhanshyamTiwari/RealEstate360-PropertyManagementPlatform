@@ -26,28 +26,5 @@ public class AmenityController {
         AmenityOutputDTO response = amenityService.addAmenity(amenityInputDto, unitId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
- 
-    @GetMapping("/all")
-    @Operation(summary = "Get all amenities", description = "Return all amenities details")
-    @PreAuthorize("hasAnyRole('TENANT','OWNER')")
-    public ResponseEntity<?> getAllAmenities() {
-        List<AmenityOutputDTO> amenities = amenityService.getAllAmenities();
-        return new ResponseEntity<>(amenities, HttpStatus.OK);
-    }
- 
-    @GetMapping("/unit/{unitId}")
-    @Operation(summary = "Get amenities by unit", description = "Returns amenities based on unit id")
-    @PreAuthorize("hasAnyRole('TENANT','OWNER')")
-    public ResponseEntity<?> getAmenitiesByUnit(@PathVariable int unitId) {
-        List<AmenityOutputDTO> amenities = amenityService.getAmenitiesByUnit(unitId);
-        return new ResponseEntity<>(amenities, HttpStatus.OK);
-    }
- 
-    @GetMapping("/name/{name}")
-    @Operation(summary = "Get amenities by name", description = "Returns amenities based on name")
-    @PreAuthorize("hasAnyRole('TENANT','OWNER')")
-    public ResponseEntity<?> getAmenitiesByName(@PathVariable String name) {
-        List<AmenityOutputDTO> amenities = amenityService.getAmenitiesByName(name);
-        return new ResponseEntity<>(amenities, HttpStatus.OK);
-    }
+
 }

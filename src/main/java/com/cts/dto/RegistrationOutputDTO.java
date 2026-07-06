@@ -19,6 +19,7 @@ public class RegistrationOutputDTO {
     private long phone;
     private String role;
     private LocalDate registeredOn;
+    private String status;
 	
 
 }

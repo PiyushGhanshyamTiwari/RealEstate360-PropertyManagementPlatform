@@ -55,4 +55,17 @@ public class UserController {
 			   return new ResponseEntity<>("Login Failed", HttpStatus.BAD_REQUEST);
 	}
 
+    @PutMapping("/{userId}")
+    @Operation(summary = "Update User Details",
+            description = "Allows user to update his/her information")
+    public ResponseEntity<?> updateUser(
+            @PathVariable Integer userId,
+            @RequestBody RegistrationInputDTO registerInputDTO) {
+
+        RegistrationOutputDTO response =
+                userService.updateUser(userId, registerInputDTO);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }

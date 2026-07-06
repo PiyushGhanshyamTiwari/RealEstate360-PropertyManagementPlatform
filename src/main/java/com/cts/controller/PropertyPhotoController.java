@@ -38,18 +38,7 @@ public class PropertyPhotoController {
         return new ResponseEntity<>(photo, HttpStatus.CREATED);
     }
 
-    
-    @GetMapping("/unitID/{unitID}")
-    @Operation(summary = "Return list of photos of units")
-    @PreAuthorize("hasAnyRole('OWNER','TENANT')")
-    public ResponseEntity<?> photosbyUnit(@PathVariable int unitID){
 
-        List<PropertyPhoto> list = service.photosByUnit(unitID);
-
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-    
-    
     @GetMapping("/download/{photoId}")
     @Operation(summary = "Download photos of units")
     @PreAuthorize("hasAnyRole('OWNER','TENANT')")

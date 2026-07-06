@@ -13,11 +13,14 @@ public interface UnitService {
 
 
 	public UnitOutputDTO addUnit(UnitInputDTO unit);
-    public List<UnitOutputDTO> findUnitByType(String type);
-    public List<UnitOutputDTO> findUnitByPriceRange(double minPrice, double maxPrice);
-    public List<UnitOutputDTO> findUnitByPropertyId(int propertyId);
     public List<UnitOutputDTO> findAllUnit();
-    public List<UnitOutputDTO> findUnitByFloor(int floor);
-    public List<UnitOutputDTO> findUnitByAreaSqFt(double areaSqFt);
-    public List<UnitOutputDTO> findUnitByStatus(String status);
+    public List<UnitOutputDTO> filterUnits(
+            String type,
+            Double minRent,
+            Double maxRent,
+            Integer propertyId,
+            String propertyName,
+            String city,
+            String status);
+    public UnitOutputDTO updateUnit(int unitId, UnitInputDTO unitDTO);
 }

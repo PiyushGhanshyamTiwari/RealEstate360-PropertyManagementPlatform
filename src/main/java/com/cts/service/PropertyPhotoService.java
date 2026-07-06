@@ -1,6 +1,7 @@
 package com.cts.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.core.io.Resource;   
@@ -15,7 +16,7 @@ public interface PropertyPhotoService {
 
     public Resource downloadPhoto(int photoId) throws Exception;
 
-	public List<PropertyPhoto> photosByUnit(int unitID);  
+    public HashMap<Integer, String> photosByUnit(int unitID);
 
            
 }

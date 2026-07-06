@@ -40,64 +40,45 @@ public class UnitController {
 
     }
 
-    @GetMapping("/type/{type}")
+    @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular searched type",
-            description = "This will display list of unit by applying search by type filter")
-    public ResponseEntity<?> getUnitByType(@PathVariable String type) {
-        List<UnitOutputDTO> unit = unitService.findUnitByType(type);
-        return new ResponseEntity<>(unit, HttpStatus.OK);
+    @Operation(
+            summary = "Filter units",
+            description = "Filter units using optional parameters like type, rent range, propertyId, propertyName, city and status"
+    )
+    public ResponseEntity<?> filterUnits(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Double minRent,
+            @RequestParam(required = false) Double maxRent,
+            @RequestParam(required = false) Integer propertyId,
+            @RequestParam(required = false) String propertyName,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String status) {
 
+            List<UnitOutputDTO> response = unitService.filterUnits(
+                type,
+                minRent,
+                maxRent,
+                propertyId,
+                propertyName,
+                city,
+                status);
+
+        return ResponseEntity.ok(response);
     }
+    @PutMapping("/{unitId}")
+    @PreAuthorize("hasRole('OWNER')")
+    @Operation(
+            summary = "Update Unit Details",
+            description = "Allows owner to update unit information"
+    )
+    public ResponseEntity<?> updateUnit(
+            @PathVariable int unitId,
+            @RequestBody UnitInputDTO unitDTO) {
 
-    @GetMapping("/areaSqFt/{areaSqFt}")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular searched type",
-            description = "This will display list of unit by applying search by area square feet filter")
-    public ResponseEntity<?> getUnitByAreaSqFt(@PathVariable double areaSqFt) {
-        List<UnitOutputDTO> unit = unitService.findUnitByAreaSqFt(areaSqFt);
-        return new ResponseEntity<>(unit, HttpStatus.OK);
+        UnitOutputDTO response = unitService.updateUnit(unitId, unitDTO);
 
-    }
-
-    @GetMapping("/floor/{floor}")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular searched type",
-            description = "This will display list of unit by applying search by floor filter")
-    public ResponseEntity<?> getUnitByFloor(@PathVariable int floor) {
-        List<UnitOutputDTO> unit = unitService.findUnitByFloor(floor);
-        return new ResponseEntity<>(unit, HttpStatus.OK);
-
-    }
-
-    @GetMapping("/rentAmount/{min}/{max}")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular searched type",
-            description = "This will display list of unit by applying search by rent between particular range")
-    public ResponseEntity<?> findUnitByRentAmountBetween(@PathVariable double min, @PathVariable double max) {
-        List<UnitOutputDTO> unit = unitService.findUnitByPriceRange(min, max);
-        return new ResponseEntity<>(unit, HttpStatus.OK);
-
-    }
-
-    @GetMapping("/propertyId/{propertyId}")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular searched type",
-            description = "This will display list of unit by applying search by property Id filter")
-    public ResponseEntity<?> findUnitByPropertyId(@PathVariable int propertyId) {
-        List<UnitOutputDTO> response = unitService.findUnitByPropertyId(propertyId);
         return new ResponseEntity<>(response, HttpStatus.OK);
-
-    }
-
-    @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT','OWNER')")
-    @Operation(summary = "Provide unit list for the particular status",
-            description = "This will display list of units filtered by status")
-    public ResponseEntity<?> getUnitByStatus(@PathVariable String status) {
-        List<UnitOutputDTO> unit = unitService.findUnitByStatus(status);
-        return new ResponseEntity<>(unit, HttpStatus.OK);
-
     }
 
 }

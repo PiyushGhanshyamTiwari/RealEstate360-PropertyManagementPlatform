@@ -35,5 +35,6 @@ public class RegistrationInputDTO {
     @Size(min = 5, max = 20, message = "Password must be between 5 and 20 characters")
     private String password;
 
-	
+    private String status;
+
 }

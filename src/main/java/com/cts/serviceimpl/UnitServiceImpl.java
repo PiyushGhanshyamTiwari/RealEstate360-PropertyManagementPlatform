@@ -1,8 +1,11 @@
 package com.cts.serviceimpl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cts.exception.UnitIdNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.cts.annotation.Audit;
@@ -45,7 +48,6 @@ public class UnitServiceImpl implements UnitService {
                 .orElseThrow(() ->
                         new PropertyIdNotFoundException("Property Id not found"));
 
-        // Logged-in user
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
@@ -83,73 +85,75 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<UnitOutputDTO> findUnitByType(String type) {
+    public List<UnitOutputDTO> filterUnits(
+            String type,
+            Double minRent,
+            Double maxRent,
+            Integer propertyId,
+            String propertyName,
+            String city,
+            String status) {
 
-        return unitRepository.findUnitByType(type)
+        List<Unit> units = unitRepository.findAll();
 
-                .stream()
+        return units.stream()
 
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+                .filter(unit -> type == null ||
+                        unit.getType().equalsIgnoreCase(type))
 
-                .collect(Collectors.toList());
+                .filter(unit -> propertyId == null ||
+                        unit.getProperty().getPropertyId() == propertyId)
 
+                .filter(unit -> propertyName == null ||
+                        unit.getProperty().getPropertyName()
+                                .equalsIgnoreCase(propertyName))
+
+                .filter(unit -> city == null ||
+                        unit.getProperty().getPropertyCity()
+                                .equalsIgnoreCase(city))
+
+                .filter(unit -> status == null ||
+                        unit.getStatus().name()
+                                .equalsIgnoreCase(status))
+
+                .filter(unit -> minRent == null ||
+                        unit.getRentAmount() >= minRent)
+
+                .filter(unit -> maxRent == null ||
+                        unit.getRentAmount() <= maxRent)
+
+                .map(unitMapper::convertToUnitOutputDTO)
+                .toList();
     }
 
     @Override
-    public List<UnitOutputDTO> findUnitByAreaSqFt(double areaSqFt) {
+    public UnitOutputDTO updateUnit(int unitId, UnitInputDTO dto) {
 
-        return unitRepository.findUnitByAreaSqFt(areaSqFt)
+        Unit unit = unitRepository.findById(unitId)
+                .orElseThrow(() ->
+                        new UnitIdNotFoundException("Unit not found with id: " + unitId));
 
-                .stream()
+        Property property = propertyRepository.findById(dto.getPropertyId())
+                .orElseThrow(() ->
+                        new PropertyIdNotFoundException("Property not found with id: " + dto.getPropertyId()));
 
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
+        unit.setType(dto.getType());
+        unit.setAreaSqFt(dto.getAreaSqFt());
+        unit.setFloor(dto.getFloor());
+        unit.setRentAmount(dto.getRentAmount());
+        unit.setDepositAmount(dto.getDepositAmount());
+        unit.setAvailableFrom(dto.getAvailableFrom());
 
-                .collect(Collectors.toList());
+        if (dto.getStatus() != null) {
+            unit.setStatus(dto.getStatus());
+        }
 
-    }
-    
-    @Override
-    public List<UnitOutputDTO> findUnitByFloor(int floor) {
+        unit.setProperty(property);
+        unit.setUpdatedAt(LocalDate.now());
 
-        return unitRepository.findUnitByFloor(floor)
+        Unit updatedUnit = unitRepository.save(unit);
 
-                .stream()
-
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
-
-                .collect(Collectors.toList());
-
-    }
-
-    @Override
-    public List<UnitOutputDTO> findUnitByPriceRange(double min, double max) {
-
-        return unitRepository.findUnitByPriceRange(min, max)
-
-                .stream()
-
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
-
-                .collect(Collectors.toList());
-
-    }
-
-    @Override
-    public List<UnitOutputDTO> findUnitByPropertyId(int propertyId) {
-        return unitRepository.findUnitByPropertyId(propertyId)
-                .stream()
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
-                .collect(Collectors.toList());
-    }
-    
-    public List<UnitOutputDTO> findUnitByStatus(String status) {
-
-        UnitStatus unitStatus = UnitStatus.valueOf(status.toUpperCase());
-
-        return unitRepository.findByStatus(unitStatus)
-                .stream()
-                .map(unit -> unitMapper.convertToUnitOutputDTO(unit))
-                .collect(Collectors.toList());
+        return unitMapper.convertToUnitOutputDTO(updatedUnit);
     }
 
 }

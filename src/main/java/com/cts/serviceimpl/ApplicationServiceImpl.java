@@ -4,6 +4,7 @@ package com.cts.serviceimpl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cts.enums.UnitStatus;
 import org.springframework.stereotype.Service;
 
 import com.cts.annotation.Audit;
@@ -49,10 +50,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Unit unit = unitRepository.findById(input.getUnitId())
                 .orElseThrow(() -> new UnitIdNotFoundException("UnitId not found"));
+
+        if (unit.getStatus() != UnitStatus.AVAILABLE) {
+            throw new RuntimeException(
+                    "Application cannot be submitted. Unit is not available.");
+        }
+
         User user = userRepository.findById(input.getUserId())
                 .orElseThrow(() -> new UserIdNotFoundException("UserId not found"));
-        Application application = ApplicationMapper.convertToApllication(input, unit, user);
-        Application savedApplication = applicationRepository.save(application);
+
+        Application application =
+                ApplicationMapper.convertToApllication(input, unit, user);
+
+        Application savedApplication =
+                applicationRepository.save(application);
+
         return ApplicationMapper.convertToApplicationOutputDto(savedApplication);
     }
 
