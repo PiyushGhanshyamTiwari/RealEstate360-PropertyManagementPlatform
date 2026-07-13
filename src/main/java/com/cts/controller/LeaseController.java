@@ -1,8 +1,10 @@
 package com.cts.controller;
 
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,4 +34,29 @@ public class LeaseController {
 		LeaseOutputDTO response = leaseService.updateLeaseStatus(leaseId,status);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@Operation(summary = "Listing all leases")
+	@GetMapping("/all")
+	@PreAuthorize("hasAnyRole('ACCOUNT OFFICER', 'ADMIN')")
+	public ResponseEntity<List<LeaseOutputDTO>> listAllLeases() {
+		List<LeaseOutputDTO> response = leaseService.getAllLeases();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Listing leases for an owner")
+	@GetMapping("/ownerUserId/{ownerUserId}")
+	@PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+	public ResponseEntity<List<LeaseOutputDTO>> listLeasesByOwnerUserId(@PathVariable int ownerUserId) {
+		List<LeaseOutputDTO> response = leaseService.getLeasesByOwnerUserId(ownerUserId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Listing leases for a tenant")
+	@GetMapping("/tenantId/{tenantId}")
+	@PreAuthorize("hasAnyRole('TENANT', 'ADMIN', 'ACCOUNT OFFICER')")
+	public ResponseEntity<List<LeaseOutputDTO>> listLeasesByTenantId(@PathVariable int tenantId) {
+		List<LeaseOutputDTO> response = leaseService.getLeasesByTenantId(tenantId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }
+

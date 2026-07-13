@@ -157,4 +157,28 @@ public class LeaseServiceImpl implements LeaseService {
 
         return LeaseMapper.convertToLeaseOutputDto(updatedLease);
     }
+
+    @Override
+    public List<LeaseOutputDTO> getAllLeases() {
+        return leaseRepository.findAll()
+                .stream()
+                .map(LeaseMapper::convertToLeaseOutputDto)
+                .toList();
+    }
+
+    @Override
+    public List<LeaseOutputDTO> getLeasesByOwnerUserId(int ownerUserId) {
+        return leaseRepository.findByUnit_Property_User_UserId(ownerUserId)
+                .stream()
+                .map(LeaseMapper::convertToLeaseOutputDto)
+                .toList();
+    }
+
+    @Override
+    public List<LeaseOutputDTO> getLeasesByTenantId(int tenantId) {
+        return leaseRepository.findByTenantProfile_TenantId(tenantId)
+                .stream()
+                .map(LeaseMapper::convertToLeaseOutputDto)
+                .toList();
+    }
 }

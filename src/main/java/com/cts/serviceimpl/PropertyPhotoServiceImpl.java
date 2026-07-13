@@ -38,7 +38,7 @@ public class PropertyPhotoServiceImpl implements PropertyPhotoService {
         PropertyPhoto propertyPhoto = new PropertyPhoto();
         String folder = "uploads/property-photos";
         String extensionName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        String fileName = unit.getUnitId() +"_"+extensionName;
+        String fileName = unit.getUnitId() + "_" + java.util.UUID.randomUUID().toString() + extensionName;
 
         Path path = Paths.get(folder, fileName);
 

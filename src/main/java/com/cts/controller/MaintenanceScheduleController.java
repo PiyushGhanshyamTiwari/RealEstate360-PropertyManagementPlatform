@@ -63,18 +63,18 @@ public class MaintenanceScheduleController {
     @GetMapping("/{scheduleId}")
     @Operation(summary = "Get schedule by ID",
             description = "Returns maintenance schedule based on schedule ID")
-    @PreAuthorize("hasAnyRole('OWNER')")
+    @PreAuthorize("hasAnyRole('OWNER', 'TENANT')")
     public ResponseEntity<MaintenanceScheduleResponseDTO> getScheduleById(
             @PathVariable int scheduleId) {
 
         MaintenanceScheduleResponseDTO response = scheduleService.getScheduleById(scheduleId);
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+     }
 
-    @GetMapping
-    @Operation(summary = "Get all schedules",
-            description = "Returns maintenance schedule list with optional filters")
-    @PreAuthorize("hasRole('OWNER')")
+     @GetMapping
+     @Operation(summary = "Get all schedules",
+             description = "Returns maintenance schedule list with optional filters")
+     @PreAuthorize("hasAnyRole('OWNER', 'TENANT')")
     public ResponseEntity<List<MaintenanceScheduleResponseDTO>> getAllSchedules(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String severity) {
