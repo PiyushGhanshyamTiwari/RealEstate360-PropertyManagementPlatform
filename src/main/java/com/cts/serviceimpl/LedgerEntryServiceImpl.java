@@ -67,10 +67,11 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
 
     private double getProfitPercent(String unitType) {
         switch (unitType.trim().toUpperCase()) {
-            case "1BHK": return 8;
-            case "2BHK": return 7;
-            case "3BHK": return 5;
-            case "4BHK": return 4;
+            case "APARTMENT": return 8;
+            case "VILLA": return 10;
+            case "OFFICE": return 9;
+            case "STUDIO": return 12;
+            case "COMMERCIAL": return 11;
             default: throw new RuntimeException("No profit rate for unit type: " + unitType);
         }
     }
@@ -84,7 +85,7 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
 
     @Override
     public List<LedgerEntryOutputDto> getLedgerEntryByMonthAndYear(int month, int year) {
-    	List<LedgerEntryOutputDto> list =  ledgerEntryRepository.findByMonthAndYear(month, year)
+        List<LedgerEntryOutputDto> list =  ledgerEntryRepository.findByMonthAndYear(month, year)
 
                 .stream()
 

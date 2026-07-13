@@ -18,5 +18,5 @@ public interface PropertyPhotoService {
 
     public HashMap<Integer, String> photosByUnit(int unitID);
 
-           
+    public byte[] getImageBinary(int photoId) throws Exception;
 }

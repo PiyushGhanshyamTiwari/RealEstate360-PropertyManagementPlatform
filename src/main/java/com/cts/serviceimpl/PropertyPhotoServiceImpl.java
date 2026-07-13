@@ -68,7 +68,16 @@ public class PropertyPhotoServiceImpl implements PropertyPhotoService {
         return new UrlResource(path.toUri());
     }
 
+    @Override
+    public byte[] getImageBinary(int photoId) throws Exception {
+        PropertyPhoto photo = photoRepo.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("Photo not found with id: " + photoId));
 
+        Path path = Paths.get("uploads/property-photos", photo.getFileRef());
+
+        // Reads the file content into a byte array
+        return Files.readAllBytes(path);
+    }
 
     @Override
     public HashMap<Integer, String> photosByUnit(int unitID) {

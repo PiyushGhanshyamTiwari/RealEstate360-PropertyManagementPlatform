@@ -53,5 +53,22 @@ public class PropertyPhotoController {
         return new ResponseEntity<>(file, headers, HttpStatus.OK);
     }
 
+    @GetMapping("/views/{photoId}")
+    @Operation(summary = "Get binary content of unit photos to view inline")
+//    @PreAuthorize("hasAnyRole('OWNER','TENANT')")
+    public ResponseEntity<byte[]> viewPhoto(@PathVariable int photoId) throws Exception {
+
+        byte[] imageBytes = service.getImageBinary(photoId);
+
+        HttpHeaders headers = new HttpHeaders();
+
+        // Dynamically setting content type is ideal, but if they are all JPEGs:
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        // "inline" tells the browser to display it rather than downloading it
+        headers.setContentDispositionFormData("inline", "photo.jpg");
+
+        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+    }
   
 }

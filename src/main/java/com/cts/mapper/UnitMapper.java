@@ -49,7 +49,11 @@ public class UnitMapper {
         response.setDepositAmount(unit.getDepositAmount());
         response.setAvailableFrom(unit.getAvailableFrom());
         response.setCreatedAt(unit.getCreatedAt());
-        response.setStatus(UnitStatus.valueOf(unit.getStatus().name()));
+        response.setStatus(
+                unit.getStatus() == null
+                        ? UnitStatus.AVAILABLE
+                        : unit.getStatus()
+        );
         response.setUpdatedAt(unit.getUpdatedAt());
 
         if (unit.getProperty() != null) {

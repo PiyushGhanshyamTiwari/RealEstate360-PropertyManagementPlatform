@@ -28,7 +28,10 @@ public class RegistrationInputDTO {
     private String phone;
 
     @NotBlank(message = "Role is required")
-    @Pattern(regexp = "^(owner|tenant|admin|technician|finance manager)$", message = "Role must be owner, tenant, technician, finance manager or admin")
+    @Pattern(
+            regexp = "^(owner|tenant|admin|technician|account officer)$",
+            message = "Role must be owner, tenant, technician, account officer or admin"
+    )
     private String role;
 
     @NotBlank(message = "Password is required")
