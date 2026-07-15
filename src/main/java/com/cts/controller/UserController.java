@@ -14,6 +14,7 @@ import com.cts.dto.RegistrationOutputDTO;
 import com.cts.entity.User;
 import com.cts.repository.UserRepository;
 import com.cts.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,6 +67,17 @@ public class UserController {
                 userService.updateUser(userId, registerInputDTO);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/{userId}/{status}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update User Status",
+            description = "Allows updating status of user account")
+    public ResponseEntity<?> updateUserStatus(
+            @PathVariable Integer userId,
+            @PathVariable String status) {
+        userService.updateUserStatus(userId, status);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

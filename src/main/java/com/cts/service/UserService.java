@@ -13,4 +13,5 @@ public interface UserService {
 	public List<User> getAllUsers();
 	public LoginResponseDTO userLogin(LoginDTO loginDTO);
     public RegistrationOutputDTO updateUser(Integer userId,RegistrationInputDTO registerInputDTO);
+    public void updateUserStatus(Integer userId, String status);
 }

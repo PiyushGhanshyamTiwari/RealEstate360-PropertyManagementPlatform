@@ -69,6 +69,22 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
+        // Account inactive check
+        if (user.getStatus() == User.Status.INACTIVE) {
+            auditLogService.logAction(AuditLogRequestDTO.builder()
+                    .userId(user.getUserId())
+                    .action(AuditActions.LOGIN_USER)
+                    .resourceType("User")
+                    .resourceId(String.valueOf(user.getUserId()))
+                    .status("FAILED")
+                    .details("LOGIN_USER FAILED | Reason: User account is inactive: " + loginDTO.getEmailId())
+                    .build());
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "You are inactive, kindly contact admin."
+            );
+        }
+
         // Wrong password → log FAILED
         if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             auditLogService.logAction(AuditLogRequestDTO.builder()
@@ -119,5 +135,13 @@ public class UserServiceImpl implements UserService {
 
         return mapper
                 .convertToUserResponseDTO(updatedUser);
+    }
+
+    @Override
+    public void updateUserStatus(Integer userId, String status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.cts.exception.UserIdNotFoundException("User not found with id " + userId));
+        user.setStatus(User.Status.valueOf(status.toUpperCase()));
+        userRepository.save(user);
     }
 }
