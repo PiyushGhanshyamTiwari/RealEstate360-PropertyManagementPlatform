@@ -1,22 +1,23 @@
 package com.cts.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.cts.dto.AuditLogResponseDTO;
-import com.cts.service.AuditLogService;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import com.cts.dto.AuditLogResponseDTO;
+import com.cts.service.AuditLogService;
 
 @ExtendWith(MockitoExtension.class)
 class AuditLogControllerTest {
@@ -25,81 +26,45 @@ class AuditLogControllerTest {
     private AuditLogService auditLogService;
 
     @InjectMocks
-    private AuditLogController controller;
+    private AuditLogController auditLogController;
 
-    private MockMvc mockMvc;
+    @Test
+    void testGetAll_WithFilters() {
 
-    @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        String logType = "ACTION";
+        String logValue = "CREATE";
+
+        List<AuditLogResponseDTO> logs = new ArrayList<>();
+        logs.add(new AuditLogResponseDTO());
+
+        when(auditLogService.getAllLogs(logType, logValue))
+                .thenReturn(logs);
+
+        ResponseEntity<List<AuditLogResponseDTO>> response =
+                auditLogController.getAll(logType, logValue);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(logs, response.getBody());
+
+        verify(auditLogService).getAllLogs(logType, logValue);
     }
 
     @Test
-    void testGetAll() throws Exception {
-        when(auditLogService.getAllLogs())
-                .thenReturn(List.of(new AuditLogResponseDTO()));
+    void testGetAll_WithNullFilters() {
 
-        mockMvc.perform(get("/api/v1/audit-logs/all"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+        List<AuditLogResponseDTO> logs = new ArrayList<>();
 
-        verify(auditLogService).getAllLogs();
-    }
+        when(auditLogService.getAllLogs(null, null))
+                .thenReturn(logs);
 
-    @Test
-    void testGetAllEmpty() throws Exception {
-        when(auditLogService.getAllLogs())
-                .thenReturn(List.of());
+        ResponseEntity<List<AuditLogResponseDTO>> response =
+                auditLogController.getAll(null, null);
 
-        mockMvc.perform(get("/api/v1/audit-logs/all"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
-    }
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(logs, response.getBody());
 
-    @Test
-    void testGetById() throws Exception {
-        when(auditLogService.getLogById(1L))
-                .thenReturn(new AuditLogResponseDTO());
-
-        mockMvc.perform(get("/api/v1/audit-logs/{auditId}", 1L))
-                .andExpect(status().isOk());
-
-        verify(auditLogService).getLogById(1L);
-    }
-
-    @Test
-    void testGetByUser() throws Exception {
-        when(auditLogService.getLogsByUserId(10))
-                .thenReturn(List.of(new AuditLogResponseDTO()));
-
-        mockMvc.perform(get("/api/v1/audit-logs/user/{userId}", 10))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(auditLogService).getLogsByUserId(10);
-    }
-
-    @Test
-    void testGetByAction() throws Exception {
-        when(auditLogService.getLogsByAction("LOGIN_USER"))
-                .thenReturn(List.of(new AuditLogResponseDTO()));
-
-        mockMvc.perform(get("/api/v1/audit-logs/action/{action}", "LOGIN_USER"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(auditLogService).getLogsByAction("LOGIN_USER");
-    }
-
-    @Test
-    void testGetByResourceType() throws Exception {
-        when(auditLogService.getLogsByResourceType("User"))
-                .thenReturn(List.of(new AuditLogResponseDTO()));
-
-        mockMvc.perform(get("/api/v1/audit-logs/resource/{resourceType}", "User"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(auditLogService).getLogsByResourceType("User");
+        verify(auditLogService).getAllLogs(null, null);
     }
 }

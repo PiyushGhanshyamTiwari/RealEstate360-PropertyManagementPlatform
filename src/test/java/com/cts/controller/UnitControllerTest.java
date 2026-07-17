@@ -1,26 +1,24 @@
 package com.cts.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 
-import com.cts.dto.UnitInputDTO;
-import com.cts.dto.UnitOutputDTO;
-import com.cts.service.UnitService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import com.cts.dto.UnitInputDTO;
+import com.cts.dto.UnitOutputDTO;
+import com.cts.service.UnitService;
 
 @ExtendWith(MockitoExtension.class)
 class UnitControllerTest {
@@ -29,151 +27,147 @@ class UnitControllerTest {
     private UnitService unitService;
 
     @InjectMocks
-    private UnitController controller;
+    private UnitController unitController;
 
-    private MockMvc mockMvc;
+    @Test
+    void testAddUnit() {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+        UnitInputDTO inputDTO = new UnitInputDTO();
+        UnitOutputDTO outputDTO = new UnitOutputDTO();
 
-    @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        when(unitService.addUnit(inputDTO)).thenReturn(outputDTO);
+
+        ResponseEntity<?> response = unitController.addUnit(inputDTO);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(outputDTO, response.getBody());
+
+        verify(unitService).addUnit(inputDTO);
     }
 
-    
     @Test
-    void testAddUnit() throws Exception {
-        UnitInputDTO input = new UnitInputDTO();
+    void testGetAllUnit() {
 
-        when(unitService.addUnit(any()))
-                .thenReturn(new UnitOutputDTO());
+        List<UnitOutputDTO> units = Arrays.asList(
+                new UnitOutputDTO(),
+                new UnitOutputDTO());
 
-        mockMvc.perform(post("/api/v1/unit/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isCreated());
+        when(unitService.findAllUnit()).thenReturn(units);
 
-        verify(unitService).addUnit(any());
-    }
+        ResponseEntity<?> response = unitController.getAllUnit();
 
-  
-    @Test
-    void testGetAllUnit() throws Exception {
-
-        when(unitService.findAllUnit())
-                .thenReturn(List.of(new UnitOutputDTO()));
-
-        mockMvc.perform(get("/api/v1/unit/all"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(units, response.getBody());
 
         verify(unitService).findAllUnit();
     }
 
-    
     @Test
-    void testGetAllUnitEmpty() throws Exception {
+    void testFilterUnits() {
 
-        when(unitService.findAllUnit())
-                .thenReturn(List.of());
+        String type = "1BHK";
+        Double minRent = 5000.0;
+        Double maxRent = 15000.0;
+        Integer propertyId = 1;
+        String propertyName = "Green Villa";
+        String city = "Chennai";
+        String status = "AVAILABLE";
 
-        mockMvc.perform(get("/api/v1/unit/all"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
-    }
+        List<UnitOutputDTO> expected = List.of(new UnitOutputDTO());
 
-    
-    @Test
-    void testGetUnitByType() throws Exception {
+        when(unitService.filterUnits(
+                type,
+                minRent,
+                maxRent,
+                propertyId,
+                propertyName,
+                city,
+                status))
+                .thenReturn(expected);
 
-        when(unitService.findUnitByType("2BHK"))
-                .thenReturn(List.of(new UnitOutputDTO()));
+        ResponseEntity<?> response =
+                unitController.filterUnits(
+                        type,
+                        minRent,
+                        maxRent,
+                        propertyId,
+                        propertyName,
+                        city,
+                        status);
 
-        mockMvc.perform(get("/api/v1/unit/type/{type}", "2BHK"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expected, response.getBody());
 
-        verify(unitService).findUnitByType("2BHK");
-    }
-
-  
-    @Test
-    void testGetUnitByAreaSqFt() throws Exception {
-
-        when(unitService.findUnitByAreaSqFt(1200))
-                .thenReturn(List.of(new UnitOutputDTO()));
-
-        mockMvc.perform(get("/api/v1/unit/areaSqFt/{area}", 1200))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(unitService).findUnitByAreaSqFt(1200);
-    }
-
-   
-    @Test
-    void testGetUnitByFloor() throws Exception {
-
-        when(unitService.findUnitByFloor(2))
-                .thenReturn(List.of(new UnitOutputDTO()));
-
-        mockMvc.perform(get("/api/v1/unit/floor/{floor}", 2))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(unitService).findUnitByFloor(2);
-    }
-
-    
-    @Test
-    void testFindUnitByRentRange() throws Exception {
-
-        when(unitService.findUnitByPriceRange(10000, 20000))
-                .thenReturn(List.of(new UnitOutputDTO()));
-
-        mockMvc.perform(get("/api/v1/unit/rentAmount/{min}/{max}", 10000, 20000))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(unitService).findUnitByPriceRange(10000, 20000);
-    }
-
-    
-    @Test
-    void testFindUnitByPropertyId() throws Exception {
-
-        when(unitService.findUnitByPropertyId(1))
-                .thenReturn(List.of(new UnitOutputDTO()));
-
-        mockMvc.perform(get("/api/v1/unit/propertyId/{id}", 1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(unitService).findUnitByPropertyId(1);
+        verify(unitService).filterUnits(
+                type,
+                minRent,
+                maxRent,
+                propertyId,
+                propertyName,
+                city,
+                status);
     }
 
     @Test
-    void testGetUnitByStatus() throws Exception {
+    void testFilterUnitsWithNullParameters() {
 
-        when(unitService.findUnitByStatus("AVAILABLE"))
-                .thenReturn(List.of(new UnitOutputDTO()));
+        List<UnitOutputDTO> expected = List.of();
 
-        mockMvc.perform(get("/api/v1/unit/status/{status}", "AVAILABLE"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+        when(unitService.filterUnits(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null))
+                .thenReturn(expected);
 
-        verify(unitService).findUnitByStatus("AVAILABLE");
+        ResponseEntity<?> response =
+                unitController.filterUnits(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expected, response.getBody());
+
+        verify(unitService).filterUnits(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
-    
     @Test
-    void testGetUnitByTypeEmpty() throws Exception {
+    void testUpdateUnit() {
 
-        when(unitService.findUnitByType("2BHK"))
-                .thenReturn(List.of());
+        int unitId = 1;
 
-        mockMvc.perform(get("/api/v1/unit/type/{type}", "2BHK"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+        UnitInputDTO inputDTO = new UnitInputDTO();
+        UnitOutputDTO outputDTO = new UnitOutputDTO();
+
+        when(unitService.updateUnit(unitId, inputDTO))
+                .thenReturn(outputDTO);
+
+        ResponseEntity<?> response =
+                unitController.updateUnit(unitId, inputDTO);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(outputDTO, response.getBody());
+
+        verify(unitService).updateUnit(unitId, inputDTO);
     }
 }

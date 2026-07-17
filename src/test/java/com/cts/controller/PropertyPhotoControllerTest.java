@@ -1,27 +1,24 @@
 package com.cts.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.List;
-
-import com.cts.entity.PropertyPhoto;
-import com.cts.service.PropertyPhotoService;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.cts.entity.PropertyPhoto;
+import com.cts.service.PropertyPhotoService;
 
 @ExtendWith(MockitoExtension.class)
 class PropertyPhotoControllerTest {
@@ -32,84 +29,84 @@ class PropertyPhotoControllerTest {
     @InjectMocks
     private PropertyPhotoController controller;
 
-    private MockMvc mockMvc;
-
-    @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    }
-
-
     @Test
     void testUploadPhoto() throws Exception {
 
+        int unitId = 1;
+        String caption = "Front View";
+        String uploadedBy = "John";
+
         MockMultipartFile file = new MockMultipartFile(
                 "file",
-                "image.jpg",
+                "photo.jpg",
                 "image/jpeg",
-                "data".getBytes()
-        );
+                "test-image".getBytes());
 
         PropertyPhoto photo = new PropertyPhoto();
-        photo.setFileRef("image.jpg");
 
-        when(service.uploadPhoto(eq(1), any(), eq("caption"), eq("admin")))
+        when(service.uploadPhoto(unitId, file, caption, uploadedBy))
                 .thenReturn(photo);
 
-        mockMvc.perform(multipart("/api/v1/propertyphoto/upload/{unitId}", 1)
-                        .file(file)
-                        .param("caption", "caption")
-                        .param("uploadedBy", "admin"))
-                .andExpect(status().isCreated());
+        ResponseEntity<PropertyPhoto> response =
+                controller.uploadPhoto(unitId, file, caption, uploadedBy);
 
-        verify(service).uploadPhoto(eq(1), any(), eq("caption"), eq("admin"));
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(photo, response.getBody());
+
+        verify(service).uploadPhoto(unitId, file, caption, uploadedBy);
     }
-
-    
-    @Test
-    void testPhotosByUnit() throws Exception {
-
-        when(service.photosByUnit(1))
-                .thenReturn(List.of(new PropertyPhoto()));
-
-        mockMvc.perform(get("/api/v1/propertyphoto/unitID/{unitID}", 1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-
-        verify(service).photosByUnit(1);
-    }
-
-    
-    @Test
-    void testPhotosByUnitEmpty() throws Exception {
-
-        when(service.photosByUnit(1))
-                .thenReturn(List.of());
-
-        mockMvc.perform(get("/api/v1/propertyphoto/unitID/{unitID}", 1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
-    }
-
 
     @Test
     void testDownloadPhoto() throws Exception {
 
-        Resource resource = new ByteArrayResource("data".getBytes()) {
-            @Override
-            public String getFilename() {
-                return "file.jpg";
-            }
-        };
+        int photoId = 101;
 
-        when(service.downloadPhoto(1)).thenReturn(resource);
+        Resource resource =
+                new ByteArrayResource("dummy-content".getBytes()) {
+                    @Override
+                    public String getFilename() {
+                        return "photo.jpg";
+                    }
+                };
 
-        mockMvc.perform(get("/api/v1/propertyphoto/download/{photoId}", 1))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Content-Type", "application/octet-stream"))
-                .andExpect(header().string("Content-Disposition",
-                        "form-data; name=\"attachment\"; filename=\"file.jpg\""));
+        when(service.downloadPhoto(photoId))
+                .thenReturn(resource);
 
-        verify(service).downloadPhoto(1);
+        ResponseEntity<?> response =
+                controller.downloadPhoto(photoId);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(resource, response.getBody());
+
+        assertEquals(
+                "application/octet-stream",
+                response.getHeaders().getContentType().toString());
+
+        verify(service).downloadPhoto(photoId);
+    }
+
+    @Test
+    void testViewPhoto() throws Exception {
+
+        int photoId = 100;
+        byte[] imageBytes = "image-data".getBytes();
+
+        when(service.getImageBinary(photoId))
+                .thenReturn(imageBytes);
+
+        ResponseEntity<byte[]> response =
+                controller.viewPhoto(photoId);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertArrayEquals(imageBytes, response.getBody());
+
+        assertEquals(
+                "image/jpeg",
+                response.getHeaders().getContentType().toString());
+
+        verify(service).getImageBinary(photoId);
     }
 }

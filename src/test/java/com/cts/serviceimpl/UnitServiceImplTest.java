@@ -3,9 +3,12 @@ package com.cts.serviceimpl;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.cts.exception.UnitIdNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,26 +49,30 @@ class UnitServiceImplTest {
     @InjectMocks
     private UnitServiceImpl unitService;
 
-    @Test
-    void addUnit_Success() {
+    @AfterEach
+    void cleanup() {
+        SecurityContextHolder.clearContext();
+    }
 
-        UnitInputDTO input = new UnitInputDTO();
-        input.setPropertyId(1);
+    @Test
+    void testAddUnitSuccess() {
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "owner@test.com", null));
+
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
 
         User owner = new User();
         owner.setUserId(10);
 
         Property property = new Property();
+        property.setPropertyId(1);
         property.setUser(owner);
 
         Unit unit = new Unit();
-
-        UnitOutputDTO outputDTO = new UnitOutputDTO();
-
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(
-                        "owner@test.com",
-                        null));
+        UnitOutputDTO output = new UnitOutputDTO();
 
         when(propertyRepository.findById(1))
                 .thenReturn(Optional.of(property));
@@ -73,51 +80,46 @@ class UnitServiceImplTest {
         when(userRepository.findUserByEmail("owner@test.com"))
                 .thenReturn(owner);
 
-        when(unitMapper.convertToUnit(input, property))
+        when(unitMapper.convertToUnit(dto, property))
                 .thenReturn(unit);
 
         when(unitRepository.save(unit))
                 .thenReturn(unit);
 
         when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(outputDTO);
+                .thenReturn(output);
 
-        UnitOutputDTO result = unitService.addUnit(input);
+        UnitOutputDTO result = unitService.addUnit(dto);
 
-        assertNotNull(result);
-
-        verify(unitRepository).save(unit);
+        assertEquals(output, result);
     }
 
     @Test
-    void addUnit_PropertyNotFound() {
+    void testAddUnitPropertyNotFound() {
 
-        UnitInputDTO input = new UnitInputDTO();
-        input.setPropertyId(1);
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
 
         when(propertyRepository.findById(1))
                 .thenReturn(Optional.empty());
 
-        assertThrows(PropertyIdNotFoundException.class,
-                () -> unitService.addUnit(input));
+        assertThrows(
+                PropertyIdNotFoundException.class,
+                () -> unitService.addUnit(dto));
     }
 
     @Test
-    void addUnit_UserNotFound() {
-
-        UnitInputDTO input = new UnitInputDTO();
-        input.setPropertyId(1);
-
-        User owner = new User();
-        owner.setUserId(10);
-
-        Property property = new Property();
-        property.setUser(owner);
+    void testAddUnitUserNotFound() {
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
-                        "owner@test.com",
-                        null));
+                        "owner@test.com", null));
+
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
+
+        Property property = new Property();
+        property.setUser(new User());
 
         when(propertyRepository.findById(1))
                 .thenReturn(Optional.of(property));
@@ -125,29 +127,29 @@ class UnitServiceImplTest {
         when(userRepository.findUserByEmail("owner@test.com"))
                 .thenReturn(null);
 
-        assertThrows(UserIdNotFoundException.class,
-                () -> unitService.addUnit(input));
+        assertThrows(
+                UserIdNotFoundException.class,
+                () -> unitService.addUnit(dto));
     }
 
     @Test
-    void addUnit_AccessDenied() {
-
-        UnitInputDTO input = new UnitInputDTO();
-        input.setPropertyId(1);
-
-        User owner = new User();
-        owner.setUserId(10);
-
-        User loggedInUser = new User();
-        loggedInUser.setUserId(20);
-
-        Property property = new Property();
-        property.setUser(owner);
+    void testAddUnitAccessDenied() {
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
-                        "owner@test.com",
-                        null));
+                        "owner@test.com", null));
+
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
+
+        User propertyOwner = new User();
+        propertyOwner.setUserId(1);
+
+        User loggedInUser = new User();
+        loggedInUser.setUserId(2);
+
+        Property property = new Property();
+        property.setUser(propertyOwner);
 
         when(propertyRepository.findById(1))
                 .thenReturn(Optional.of(property));
@@ -155,12 +157,13 @@ class UnitServiceImplTest {
         when(userRepository.findUserByEmail("owner@test.com"))
                 .thenReturn(loggedInUser);
 
-        assertThrows(AccessDeniedException.class,
-                () -> unitService.addUnit(input));
+        assertThrows(
+                AccessDeniedException.class,
+                () -> unitService.addUnit(dto));
     }
 
     @Test
-    void findAllUnit() {
+    void testFindAllUnit() {
 
         Unit unit = new Unit();
         UnitOutputDTO dto = new UnitOutputDTO();
@@ -178,128 +181,141 @@ class UnitServiceImplTest {
     }
 
     @Test
-    void findUnitByType() {
+    void testFilterUnits() {
+
+        Property property = new Property();
+        property.setPropertyId(1);
+        property.setPropertyName("Green Villa");
+        property.setPropertyCity("Chennai");
 
         Unit unit = new Unit();
+        unit.setType("2BHK");
+        unit.setProperty(property);
+        unit.setStatus(UnitStatus.AVAILABLE);
+        unit.setRentAmount(10000.0);
+
         UnitOutputDTO dto = new UnitOutputDTO();
 
-        when(unitRepository.findUnitByType("2BHK"))
+        when(unitRepository.findAll())
                 .thenReturn(List.of(unit));
 
         when(unitMapper.convertToUnitOutputDTO(unit))
                 .thenReturn(dto);
 
         List<UnitOutputDTO> result =
-                unitService.findUnitByType("2BHK");
+                unitService.filterUnits(
+                        "2BHK",
+                        5000.0,
+                        15000.0,
+                        1,
+                        "Green Villa",
+                        "Chennai",
+                        "AVAILABLE");
 
         assertEquals(1, result.size());
     }
 
     @Test
-    void findUnitByAreaSqFt() {
+    void testFilterUnitsNoMatch() {
 
-        Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
-
-        when(unitRepository.findUnitByAreaSqFt(1200))
-                .thenReturn(List.of(unit));
-
-        when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
+        when(unitRepository.findAll())
+                .thenReturn(List.of());
 
         List<UnitOutputDTO> result =
-                unitService.findUnitByAreaSqFt(1200);
+                unitService.filterUnits(
+                        "3BHK",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
-        assertEquals(1, result.size());
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    void findUnitByFloor() {
+    void testUpdateUnitSuccessWithStatus() {
+
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
+        dto.setStatus(UnitStatus.AVAILABLE);
+
+        Property property = new Property();
 
         Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
+        UnitOutputDTO output = new UnitOutputDTO();
 
-        when(unitRepository.findUnitByFloor(2))
-                .thenReturn(List.of(unit));
+        when(unitRepository.findById(1))
+                .thenReturn(Optional.of(unit));
+
+        when(propertyRepository.findById(1))
+                .thenReturn(Optional.of(property));
+
+        when(unitRepository.save(unit))
+                .thenReturn(unit);
 
         when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
+                .thenReturn(output);
 
-        List<UnitOutputDTO> result =
-                unitService.findUnitByFloor(2);
+        UnitOutputDTO result =
+                unitService.updateUnit(1, dto);
 
-        assertEquals(1, result.size());
+        assertEquals(output, result);
     }
 
     @Test
-    void findUnitByPriceRange() {
+    void testUpdateUnitSuccessWithoutStatus() {
 
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
+        dto.setStatus(null);
+
+        Property property = new Property();
         Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
 
-        when(unitRepository.findUnitByPriceRange(1000, 5000))
-                .thenReturn(List.of(unit));
+        when(unitRepository.findById(1))
+                .thenReturn(Optional.of(unit));
+
+        when(propertyRepository.findById(1))
+                .thenReturn(Optional.of(property));
+
+        when(unitRepository.save(unit))
+                .thenReturn(unit);
 
         when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
+                .thenReturn(new UnitOutputDTO());
 
-        List<UnitOutputDTO> result =
-                unitService.findUnitByPriceRange(1000, 5000);
-
-        assertEquals(1, result.size());
+        assertNotNull(unitService.updateUnit(1, dto));
     }
 
     @Test
-    void findUnitByPropertyId() {
+    void testUpdateUnitUnitNotFound() {
 
-        Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
+        UnitInputDTO dto = new UnitInputDTO();
 
-        when(unitRepository.findUnitByPropertyId(1))
-                .thenReturn(List.of(unit));
+        when(unitRepository.findById(1))
+                .thenReturn(Optional.empty());
 
-        when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
-
-        List<UnitOutputDTO> result =
-                unitService.findUnitByPropertyId(1);
-
-        assertEquals(1, result.size());
+        assertThrows(
+                UnitIdNotFoundException.class,
+                () -> unitService.updateUnit(1, dto));
     }
 
     @Test
-    void findUnitByStatus() {
+    void testUpdateUnitPropertyNotFound() {
 
-        Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
+        UnitInputDTO dto = new UnitInputDTO();
+        dto.setPropertyId(1);
 
-        when(unitRepository.findByStatus(UnitStatus.AVAILABLE))
-                .thenReturn(List.of(unit));
+        when(unitRepository.findById(1))
+                .thenReturn(Optional.of(new Unit()));
 
-        when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
+        when(propertyRepository.findById(1))
+                .thenReturn(Optional.empty());
 
-        List<UnitOutputDTO> result =
-                unitService.findUnitByStatus("AVAILABLE");
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void findUnitByStatus_LowerCaseInput() {
-
-        Unit unit = new Unit();
-        UnitOutputDTO dto = new UnitOutputDTO();
-
-        when(unitRepository.findByStatus(UnitStatus.AVAILABLE))
-                .thenReturn(List.of(unit));
-
-        when(unitMapper.convertToUnitOutputDTO(unit))
-                .thenReturn(dto);
-
-        List<UnitOutputDTO> result =
-                unitService.findUnitByStatus("available");
-
-        assertEquals(1, result.size());
+        assertThrows(
+                PropertyIdNotFoundException.class,
+                () -> unitService.updateUnit(1, dto));
     }
 }

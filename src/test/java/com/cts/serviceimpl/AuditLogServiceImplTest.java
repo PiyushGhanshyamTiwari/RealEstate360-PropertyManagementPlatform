@@ -3,22 +3,21 @@ package com.cts.serviceimpl;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.cts.dto.AuditLogRequestDTO;
 import com.cts.dto.AuditLogResponseDTO;
 import com.cts.entity.AuditLog;
 import com.cts.mapper.AuditLogMapper;
 import com.cts.repository.AuditLogRepository;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AuditLogServiceImplTest {
@@ -29,105 +28,199 @@ class AuditLogServiceImplTest {
     @Mock
     private AuditLogMapper auditLogMapper;
 
+    @Spy
     @InjectMocks
-    private AuditLogServiceImpl service;
-
-    private AuditLog auditLog;
-    private AuditLogResponseDTO responseDTO;
-
-    @BeforeEach
-    void setup() {
-        auditLog = new AuditLog();
-        auditLog.setAuditId(1L);
-        auditLog.setUserId(10);
-        auditLog.setAction("LOGIN_USER");
-        auditLog.setResourceType("User");
-
-        responseDTO = new AuditLogResponseDTO();
-        responseDTO.setAuditId(1L);
-    }
+    private AuditLogServiceImpl auditLogService;
 
     @Test
     void testLogAction() {
-        AuditLogRequestDTO request = AuditLogRequestDTO.builder()
-                .userId(10)
-                .action("LOGIN_USER")
-                .resourceType("User")
-                .build();
 
-        when(auditLogMapper.convertToAuditLog(request)).thenReturn(auditLog);
-        when(auditLogRepository.save(auditLog)).thenReturn(auditLog);
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
+        AuditLogRequestDTO requestDTO = new AuditLogRequestDTO();
+        AuditLog entity = new AuditLog();
+        AuditLog savedEntity = new AuditLog();
+        AuditLogResponseDTO responseDTO = new AuditLogResponseDTO();
 
-        AuditLogResponseDTO result = service.logAction(request);
+        when(auditLogMapper.convertToAuditLog(requestDTO)).thenReturn(entity);
+        when(auditLogRepository.save(entity)).thenReturn(savedEntity);
+        when(auditLogMapper.convertToAuditLogResponseDTO(savedEntity))
+                .thenReturn(responseDTO);
+
+        AuditLogResponseDTO result = auditLogService.logAction(requestDTO);
 
         assertNotNull(result);
-        verify(auditLogRepository).save(auditLog);
+        assertEquals(responseDTO, result);
+
+        verify(auditLogMapper).convertToAuditLog(requestDTO);
+        verify(auditLogRepository).save(entity);
+        verify(auditLogMapper).convertToAuditLogResponseDTO(savedEntity);
     }
 
     @Test
-    void testGetAllLogs() {
-        when(auditLogRepository.findAll()).thenReturn(List.of(auditLog));
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
+    void testGetAllLogs_NullLogType() {
 
-        List<AuditLogResponseDTO> result = service.getAllLogs();
+        AuditLog auditLog = new AuditLog();
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        when(auditLogRepository.findAll()).thenReturn(List.of(auditLog));
+        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog))
+                .thenReturn(dto);
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getAllLogs(null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        verify(auditLogRepository).findAll();
+    }
+
+    @Test
+    void testGetAllLogs_User() {
+
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        doReturn(List.of(dto))
+                .when(auditLogService)
+                .getLogsByUserId(1);
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getAllLogs("USER", "1");
 
         assertEquals(1, result.size());
+
+        verify(auditLogService).getLogsByUserId(1);
     }
 
     @Test
-    void testGetAllLogsEmpty() {
-        when(auditLogRepository.findAll()).thenReturn(Collections.emptyList());
+    void testGetAllLogs_Action() {
 
-        assertTrue(service.getAllLogs().isEmpty());
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        doReturn(List.of(dto))
+                .when(auditLogService)
+                .getLogsByAction("CREATE");
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getAllLogs("ACTION", "CREATE");
+
+        assertEquals(1, result.size());
+
+        verify(auditLogService).getLogsByAction("CREATE");
     }
 
     @Test
-    void testGetLogByIdSuccess() {
-        when(auditLogRepository.findById(1L)).thenReturn(Optional.of(auditLog));
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
+    void testGetAllLogs_Resource() {
 
-        AuditLogResponseDTO result = service.getLogById(1L);
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
 
-        assertNotNull(result);
+        doReturn(List.of(dto))
+                .when(auditLogService)
+                .getLogsByResourceType("PROPERTY");
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getAllLogs("RESOURCE", "PROPERTY");
+
+        assertEquals(1, result.size());
+
+        verify(auditLogService).getLogsByResourceType("PROPERTY");
     }
 
     @Test
-    void testGetLogByIdNotFound() {
-        when(auditLogRepository.findById(1L)).thenReturn(Optional.empty());
+    void testGetAllLogs_InvalidType() {
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> service.getLogById(1L));
+        List<AuditLogResponseDTO> result =
+                auditLogService.getAllLogs("INVALID", "TEST");
 
-        assertTrue(ex.getMessage().contains("AuditLog not found"));
+        assertNull(result);
+    }
+
+    @Test
+    void testGetLogById_Success() {
+
+        Long auditId = 1L;
+
+        AuditLog auditLog = new AuditLog();
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        when(auditLogRepository.findById(auditId))
+                .thenReturn(Optional.of(auditLog));
+
+        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog))
+                .thenReturn(dto);
+
+        AuditLogResponseDTO result =
+                auditLogService.getLogById(auditId);
+
+        assertEquals(dto, result);
+    }
+
+    @Test
+    void testGetLogById_NotFound() {
+
+        Long auditId = 1L;
+
+        when(auditLogRepository.findById(auditId))
+                .thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> auditLogService.getLogById(auditId));
+
+        assertEquals(
+                "AuditLog not found with id: 1",
+                exception.getMessage());
     }
 
     @Test
     void testGetLogsByUserId() {
-        when(auditLogRepository.findByUserId(10)).thenReturn(List.of(auditLog));
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
 
-        List<AuditLogResponseDTO> result = service.getLogsByUserId(10);
+        AuditLog log = new AuditLog();
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        when(auditLogRepository.findByUserId(1))
+                .thenReturn(List.of(log));
+
+        when(auditLogMapper.convertToAuditLogResponseDTO(log))
+                .thenReturn(dto);
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getLogsByUserId(1);
 
         assertEquals(1, result.size());
     }
 
     @Test
     void testGetLogsByAction() {
-        when(auditLogRepository.findByAction("LOGIN_USER")).thenReturn(List.of(auditLog));
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
 
-        List<AuditLogResponseDTO> result = service.getLogsByAction("LOGIN_USER");
+        AuditLog log = new AuditLog();
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        when(auditLogRepository.findByAction("CREATE"))
+                .thenReturn(List.of(log));
+
+        when(auditLogMapper.convertToAuditLogResponseDTO(log))
+                .thenReturn(dto);
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getLogsByAction("CREATE");
 
         assertEquals(1, result.size());
     }
 
     @Test
     void testGetLogsByResourceType() {
-        when(auditLogRepository.findByResourceType("User")).thenReturn(List.of(auditLog));
-        when(auditLogMapper.convertToAuditLogResponseDTO(auditLog)).thenReturn(responseDTO);
 
-        List<AuditLogResponseDTO> result = service.getLogsByResourceType("User");
+        AuditLog log = new AuditLog();
+        AuditLogResponseDTO dto = new AuditLogResponseDTO();
+
+        when(auditLogRepository.findByResourceType("PROPERTY"))
+                .thenReturn(List.of(log));
+
+        when(auditLogMapper.convertToAuditLogResponseDTO(log))
+                .thenReturn(dto);
+
+        List<AuditLogResponseDTO> result =
+                auditLogService.getLogsByResourceType("PROPERTY");
 
         assertEquals(1, result.size());
     }
