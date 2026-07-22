@@ -31,7 +31,7 @@ public class PropertyController {
     }
 
     @GetMapping("/city/{city}")
-    @PreAuthorize("hasAnyRole('OWNER','TENANT')")
+    @PreAuthorize("hasAnyRole('OWNER','TENANT','ADMIN')")
     @Operation(summary = "Provide property list for the particular searched type",
             description = "This will display list of property by applying search by city filter")
     public ResponseEntity<?> findPropertyByCity(@PathVariable("city") String propertyCity) {
@@ -41,7 +41,7 @@ public class PropertyController {
     }
 
     @GetMapping("/state/{state}")
-    @PreAuthorize("hasAnyRole('OWNER','TENANT')")
+    @PreAuthorize("hasAnyRole('OWNER','TENANT','ADMIN')")
     @Operation(summary = "Provide property list for the particular searched type",
             description = "This will display list of property by applying search by state filter")
     public ResponseEntity<?> getPropertyByState(@PathVariable("state") String propertyState){
@@ -51,7 +51,7 @@ public class PropertyController {
     }
 
     @GetMapping("/ownerId/{ownerId}")
-    @PreAuthorize("hasAnyRole('OWNER','TENANT')")
+    @PreAuthorize("hasAnyRole('OWNER','TENANT','ADMIN')")
     @Operation(summary = "Provide property list for the particular searched type",
             description = "This will display list of property by applying search by ownerID filter")
     public ResponseEntity<?> findPropertyByOwnerId(@PathVariable("ownerId") int ownerId){

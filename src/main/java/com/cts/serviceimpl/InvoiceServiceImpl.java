@@ -1,6 +1,7 @@
 package com.cts.serviceimpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime; // Added for timestamp update
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,37 +34,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     private LeaseRepository leaseRepository;
     private LedgerEntryService ledgerEntryService;
 
-
-//    @Override
-//    @Audit(action = AuditActions.CREATE_INVOICE, resourceType = "Invoice")
-//    public List<InvoiceOutputDTO> generateInvoice(InvoiceInputDTO input) {
-//        TenantProfile tenant = tenantProfileRepository.findById(input.getTenantId())
-//                .orElseThrow(() -> new TenantIdNotFoundException("Tenant not found"));
-//        Lease lease = leaseRepository.findById(input.getLeaseId())
-//                .orElseThrow(() -> new RuntimeException("Lease not found"));
-//
-//        LocalDate leaseStart = lease.getStartDate();
-//        LocalDate leaseEnd = lease.getEndDate();
-//        LocalDate currentMonth = leaseStart.withDayOfMonth(1);
-//
-//        List<Invoice> invoices = new ArrayList<>();
-//        while (!currentMonth.isAfter(leaseEnd)) {
-//            Invoice invoice = InvoiceMapper.convertToInvoice(input, tenant, lease);
-//            LocalDate periodStart = currentMonth;
-//            LocalDate periodEnd = currentMonth.withDayOfMonth(currentMonth.lengthOfMonth());
-//            if (periodEnd.isAfter(leaseEnd)) periodEnd = leaseEnd;
-//            LocalDate dueDate = currentMonth.withDayOfMonth(5);
-//            invoice.setPeriodStart(periodStart);
-//            invoice.setPeriodEnd(periodEnd);
-//            invoice.setDueDate(dueDate);
-//            invoices.add(invoice);
-//            currentMonth = currentMonth.plusMonths(1);
-//        }
-//
-//        invoiceRepository.saveAll(invoices);
-//        return invoices.stream().map(InvoiceMapper::convertToInvoiceOutputDto).toList();
-//    }
-
     @Override
     public List<InvoiceOutputDTO> listInvoiceWithLeaseId(int leaseId) {
         Lease lease = leaseRepository.findById(leaseId)
@@ -79,37 +49,32 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceOutputDTO updateStatus(int invoiceId, String status, Integer officerId) {
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice Id not found"));
 
-                .orElseThrow(()->new RuntimeException("Invoice Id not found"));
-
-        Invoice.Status enumStatus = Invoice.Status.valueOf(status);
-
+        Invoice.Status enumStatus = Invoice.Status.valueOf(status.toUpperCase());
         invoice.setStatus(enumStatus);
+
+        // Update the timestamp in the database when payment is recorded
+        if (enumStatus == Invoice.Status.PAID) {
+            invoice.setGeneratedAt(LocalDateTime.now());
+            // Note: If your Invoice entity uses a different timestamp field name
+            // like setPaidAt(...) or setUpdatedAt(...), adjust this setter name accordingly.
+        }
 
         Invoice updatedInvoice = invoiceRepository.save(invoice);
 
         if (enumStatus == Invoice.Status.PAID) {
-
             ledgerEntryService.createForPaidInvoice(updatedInvoice, officerId);
-
         }
 
         return InvoiceMapper.convertToInvoiceOutputDto(updatedInvoice);
-
     }
-    
+
     @Override
-
     public List<InvoiceDefaultersOutputDto> getDefaulters() {
-
         List<Invoice> invoices = invoiceRepository.findDefaulters();
-
         return invoices.stream()
-
                 .map(InvoiceMapper::convertToInvoiceDefaultersOutputDto)
-
                 .toList();
-
     }
-
 }

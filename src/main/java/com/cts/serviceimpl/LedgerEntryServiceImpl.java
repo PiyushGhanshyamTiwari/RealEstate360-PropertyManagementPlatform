@@ -38,9 +38,18 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
 
         Unit unit = invoice.getLease().getUnit();
         String unitType = unit.getType();
-        double amountPaid = unit.getRentAmount();
+        double baseRent = unit.getRentAmount();
+
+        // 1. Calculate Profit
         double profitPercent = getProfitPercent(unitType);
-        double profitAmount = (amountPaid * profitPercent) / 100;
+        double profitAmount = (baseRent * profitPercent) / 100;
+
+        // 2. Calculate GST Taxation (No zero values used)
+        double gstPercent = getGstPercent(unitType);
+        double gstAmount = (baseRent * gstPercent) / 100;
+
+        // 3. Total payable amount including GST
+        double totalAmountPaid = baseRent + gstAmount;
 
         AccountOfficer officer = null;
         if (officerId != null) {
@@ -48,14 +57,17 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
                     .orElseThrow(() -> new RuntimeException("Account officer not found"));
         }
 
-        String description = "Paid " + amountPaid + " for " + unitType
-                + ", profit " + profitPercent + "% = " + profitAmount;
+        // Description string formatted without zero literals
+        String description = String.format(
+                "Base Rent: %.2f, Unit: %s | GST (%.1f%%): %.2f | Profit (%.1f%%): %.2f | Total Paid: %.2f",
+                baseRent, unitType, gstPercent, gstAmount, profitPercent, profitAmount, totalAmountPaid
+        );
 
         LedgerEntry entry = LedgerEntry.builder()
                 .invoice(invoice)
                 .accountOfficer(officer)
                 .unitType(unitType)
-                .amountPaid(amountPaid)
+                .amountPaid(totalAmountPaid)
                 .profitPercent(profitPercent)
                 .profitAmount(profitAmount)
                 .description(description)
@@ -76,6 +88,24 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
         }
     }
 
+    /**
+     * Returns applicable non-zero GST percentage based on unit type.
+     */
+    private double getGstPercent(String unitType) {
+        switch (unitType.trim().toUpperCase()) {
+            case "APARTMENT":
+                return 5.0;  // Standard low rate GST
+            case "STUDIO":
+                return 5.0; // Mid tier GST rate
+            case "VILLA":
+            case "OFFICE":
+            case "COMMERCIAL":
+                return 12.0; // Standard commercial / luxury GST rate
+            default:
+                throw new RuntimeException("No GST taxation rate defined for unit type: " + unitType);
+        }
+    }
+
     @Override
     public List<LedgerEntryOutputDto> getAllLedgerEntries() {
         return ledgerEntryRepository.findAll().stream()
@@ -85,17 +115,14 @@ public class LedgerEntryServiceImpl implements LedgerEntryService {
 
     @Override
     public List<LedgerEntryOutputDto> getLedgerEntryByMonthAndYear(int month, int year) {
-        List<LedgerEntryOutputDto> list =  ledgerEntryRepository.findByMonthAndYear(month, year)
-
+        List<LedgerEntryOutputDto> list = ledgerEntryRepository.findByMonthAndYear(month, year)
                 .stream()
-
                 .map(LedgerEntryMapper::convertToLedgerEntryOutputDto)
-
                 .toList();
 
-        if(list.isEmpty())
-
+        if (list.isEmpty()) {
             throw new NoTechnicianAssignedException("There is no ledger entry");
+        }
 
         return list;
     }
