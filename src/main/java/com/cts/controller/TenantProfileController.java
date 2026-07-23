@@ -48,11 +48,10 @@ public class TenantProfileController {
     	TenantProfileOutputDTO response = tenantProfileService.getTenantById(tenantId);
     	return new ResponseEntity<>(response,HttpStatus.OK);
     }
-    @Operation(summary = "Give Tenants by UserId")
     @GetMapping("/userId/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getTenantByUserId(@PathVariable int userId){
-    	TenantProfileOutputDTO response = tenantProfileService.getTenantByUserId(userId);
-    	return new ResponseEntity<>(response,HttpStatus.OK);
+    @PreAuthorize("hasAnyRole('TENANT', 'ADMIN', 'OWNER', 'ACCOUNT OFFICER')") // <-- Add 'TENANT' here!
+    public ResponseEntity<TenantProfileOutputDTO> getTenantByUserId(@PathVariable int userId) {
+        TenantProfileOutputDTO tenant = tenantProfileService.getTenantByUserId(userId);
+        return ResponseEntity.ok(tenant);
     }
 }
